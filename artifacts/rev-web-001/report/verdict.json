@@ -1,0 +1,118 @@
+{
+  "review_id": "rev-web-001",
+  "decision": "reject",
+  "summary": "Rejected: 1 required check(s) failed. execution_success: No primary flow or command completed successfully.",
+  "check_results": [
+    {
+      "policy": {
+        "id": "repo_url_present",
+        "category": "docs",
+        "level": "required",
+        "description": "Repository URL must be present and non-empty."
+      },
+      "passed": true,
+      "reasoning": "Repository URL is present.",
+      "evidence_refs": []
+    },
+    {
+      "policy": {
+        "id": "project_type_supported",
+        "category": "docs",
+        "level": "required",
+        "description": "Project type must be 'web' or 'cli'."
+      },
+      "passed": true,
+      "reasoning": "Project type 'web' is supported.",
+      "evidence_refs": []
+    },
+    {
+      "policy": {
+        "id": "readme_sufficient",
+        "category": "docs",
+        "level": "required",
+        "description": "README must explain purpose and basic usage (heuristic: ≥150 chars, contains usage/install keywords)."
+      },
+      "passed": true,
+      "reasoning": "README is sufficient (321 chars, keywords: ['run', 'usage', 'install']).",
+      "evidence_refs": []
+    },
+    {
+      "policy": {
+        "id": "open_source_heuristic",
+        "category": "licensing",
+        "level": "advisory",
+        "description": "Repository should be public and open-source (heuristic based on URL)."
+      },
+      "passed": true,
+      "reasoning": "Repository appears to be on a public hosting platform.",
+      "evidence_refs": []
+    },
+    {
+      "policy": {
+        "id": "no_special_review_account",
+        "category": "security",
+        "level": "required",
+        "description": "Project must not require a shared special review account."
+      },
+      "passed": true,
+      "reasoning": "No indication of a required special review account.",
+      "evidence_refs": []
+    },
+    {
+      "policy": {
+        "id": "not_previously_submitted",
+        "category": "compliance",
+        "level": "manual_only",
+        "description": "Project must not have been submitted to another competition (manual confirmation required)."
+      },
+      "passed": true,
+      "reasoning": "Manual confirmation required; assumed OK pending human review.",
+      "evidence_refs": []
+    },
+    {
+      "policy": {
+        "id": "web_demo_url_present",
+        "category": "web",
+        "level": "required",
+        "description": "Web projects must have a live demo URL on an accepted hosting platform."
+      },
+      "passed": true,
+      "reasoning": "Demo URL is present.",
+      "evidence_refs": []
+    },
+    {
+      "policy": {
+        "id": "web_demo_host_allowed",
+        "category": "web",
+        "level": "required",
+        "description": "Demo URL must not use local/tunnel hosts (localhost, ngrok, cloudflared, duckdns, render.com are invalid)."
+      },
+      "passed": true,
+      "reasoning": "Demo host 'myapp.vercel.app' passes the allowed-host check.",
+      "evidence_refs": []
+    },
+    {
+      "policy": {
+        "id": "execution_success",
+        "category": "execution",
+        "level": "required",
+        "description": "At least one primary flow or command must complete successfully."
+      },
+      "passed": false,
+      "reasoning": "No primary flow or command completed successfully.",
+      "evidence_refs": []
+    }
+  ],
+  "web_results": [
+    {
+      "flow_id": "main_demo",
+      "success": false,
+      "url_visited": "https://myapp.vercel.app/",
+      "screenshots": [],
+      "console_errors": [],
+      "duration_ms": 404
+    }
+  ],
+  "cli_results": [],
+  "report_url": null
+}

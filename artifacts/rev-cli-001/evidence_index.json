@@ -1,0 +1,23 @@
+{
+  "review_id": "rev-cli-001",
+  "items": [
+    {
+      "id": "cli_stdout_0",
+      "type": "cli_stdout",
+      "source_stage": "cli",
+      "payload": {
+        "path": "artifacts/rev-cli-001/cli/cmd_00_pip_install_mytool_stdout.txt",
+        "command": "pip install mytool"
+      }
+    },
+    {
+      "id": "cli_stderr_0",
+      "type": "cli_stderr",
+      "source_stage": "cli",
+      "payload": {
+        "path": "artifacts/rev-cli-001/cli/cmd_00_pip_install_mytool_stderr.txt",
+        "command": "pip install mytool"
+      }
+    }
+  ]
+}
