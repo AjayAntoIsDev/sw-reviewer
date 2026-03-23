@@ -1,6 +1,7 @@
 """Individual policy rule evaluation functions."""
 
 import re
+from urllib.parse import urlparse
 from typing import Tuple, Optional, List
 
 # Domains not allowed for web demo
@@ -43,17 +44,23 @@ def check_readme_sufficient(readme_text: Optional[str]) -> Tuple[bool, str]:
     return True, f"README is sufficient ({len(text)} chars, keywords: {matched})."
 
 
+ALLOWED_OPEN_SOURCE_HOSTS = {"github.com", "gitlab.com", "codeberg.org", "sourcehut.org"}
+
+
 def check_open_source_heuristic(repo_url: Optional[str]) -> Tuple[bool, str]:
     if not repo_url:
         return False, "No repository URL to evaluate."
-    url = repo_url.lower()
-    if (
-        "github.com" in url
-        or "gitlab.com" in url
-        or "codeberg.org" in url
-        or "sourcehut.org" in url
-    ):
-        return True, "Repository appears to be on a public hosting platform."
+    try:
+        parsed = urlparse(repo_url.lower())
+        host = parsed.hostname or ""
+        # Accept exact match or subdomain (e.g. gist.github.com)
+        if host in ALLOWED_OPEN_SOURCE_HOSTS or any(
+            host == allowed or host.endswith("." + allowed)
+            for allowed in ALLOWED_OPEN_SOURCE_HOSTS
+        ):
+            return True, "Repository appears to be on a public hosting platform."
+    except ValueError:
+        pass
     return False, "Repository URL does not appear to be on a standard public platform."
 
 
