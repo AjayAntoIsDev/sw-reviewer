@@ -1,0 +1,2 @@
+- `src/sw_reviewer/state.py`: Created new file containing `JobStatus` enum, `JobState` Pydantic model, and `JobRepository` SQLite persistence layer.
+- `AI/MASTER_TODO.md`: Marked T04 status as `DONE`.

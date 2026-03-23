@@ -19,12 +19,12 @@ When a task is completed, the agent must:
 | --- | --- | --- | --- | --- | --- | --- |
 | T00 | [x] | DONE | Legacy audit, roadmap, and AI workflow setup | - | planning docs and initial context | planning-agent |
 | T00A | [x] | DONE | Polish plan (visible+README validation, screenshot-first evidence, Typst output) | T00 | updated plan and output/report requirements | planning-agent |
-| T01 | [ ] | TODO | Define final policy schema (`required/advisory/manual_only`) | T00A | executable policy schema spec | policy-agent |
-| T02 | [ ] | TODO | Define typed data contracts for all review stages | T01 | Pydantic models (`ReviewRequest`, `PolicyCheckResult`, `WebFlowResult`, `CLICommandResult`, `EvidenceBundle`, `FinalVerdict`) | core-agent |
-| T03 | [ ] | TODO | Build PydanticAI orchestrator skeleton and stage router | T02 | orchestrator service with stage pipeline hooks | orchestration-agent |
-| T04 | [ ] | TODO | Build job state model + persistence | T02 | DB schema, status transitions, repository layer | backend-agent |
-| T05 | [ ] | TODO | Implement Slack intake (`/review start`, `/review status`, `/review cancel`, `/review verdict`) | T04 | Slack handler and validated request creation | slack-agent |
-| T06 | [ ] | TODO | Implement Slack threaded progress and final verdict card | T05,T12,T16 | progress updates + final card with artifact links | slack-agent |
+| T01 | [x] | DONE | Define final policy schema (`required/advisory/manual_only`) | T00A | executable policy schema spec | policy-agent |
+| T02 | [x] | DONE | Define typed data contracts for all review stages | T01 | Pydantic models (`ReviewRequest`, `PolicyCheckResult`, `WebFlowResult`, `CLICommandResult`, `EvidenceBundle`, `FinalVerdict`) | core-agent |
+| T03 | [x] | DONE | Build PydanticAI orchestrator skeleton and stage router | T02 | orchestrator service with stage pipeline hooks | orchestration-agent |
+| T04 | [x] | DONE | Build job state model + persistence | T02 | DB schema, status transitions, repository layer | backend-agent |
+| T05 | [x] | DONE | Implement Slack intake (`/review start`, `/review status`, `/review cancel`, `/review verdict`) | T04 | Slack handler and validated request creation | slack-agent |
+| T06 | [x] | DONE | Implement Slack threaded progress and final verdict card | T05,T12,T16 | progress updates + final card with artifact links | slack-agent |
 | T07 | [ ] | TODO | Implement `agent-browser` adapter for deterministic web execution | T03 | reusable web execution client | web-agent |
 | T08 | [ ] | TODO | Implement web validator for visible UI flows and README-documented flows | T07,T01 | flow runner + pass/fail evidence mapping | web-agent |
 | T09 | [ ] | TODO | Implement mandatory screenshot capture for every validated web flow | T08 | screenshot artifact pack and index | web-agent |
