@@ -25,7 +25,7 @@ _SECRET_PATTERNS = [
     re.compile(r"(sk-[A-Za-z0-9]{20,})", re.IGNORECASE),
     re.compile(r"(ghp_[A-Za-z0-9]{36,})", re.IGNORECASE),
     re.compile(r"(AKIA[0-9A-Z]{16})", re.IGNORECASE),
-    re.compile(r"([A-Za-z0-9+/]{40,}={0,2})"),  # Generic base64-ish tokens
+    re.compile(r"(xox[baprs]-[A-Za-z0-9-]{10,})", re.IGNORECASE),  # Slack tokens
 ]
 MAX_OUTPUT_BYTES = 1024 * 64  # 64 KB per command output
 

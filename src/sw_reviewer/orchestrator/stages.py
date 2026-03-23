@@ -144,7 +144,7 @@ async def stage_cli_execution(
         phases.append(CommandPhase("build", build_cmds[:3]))
     if run_cmds:
         # For smoke tests, append --help or --version variants
-        smoke_cmds = [cmd.split()[0] + " --help" for cmd in run_cmds[:2] if cmd.split()]
+        smoke_cmds = [parts[0] + " --help" for cmd in run_cmds[:2] if (parts := cmd.split())]
         phases.append(CommandPhase("smoke", smoke_cmds[:3] + run_cmds[:3]))
 
     if not phases:

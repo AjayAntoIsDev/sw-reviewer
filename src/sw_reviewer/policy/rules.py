@@ -73,10 +73,10 @@ def check_web_demo_url_present(demo_url: Optional[str]) -> Tuple[bool, str]:
 def check_web_demo_host_allowed(demo_url: Optional[str]) -> Tuple[bool, str]:
     if not demo_url:
         return False, "Demo URL is missing."
-    match = re.match(r"https?://([^/?\s]+)", demo_url.lower())
-    if not match:
+    parsed = urlparse(demo_url.lower())
+    host = parsed.hostname or ""
+    if not host:
         return False, "Could not parse hostname from demo URL."
-    host = match.group(1).split(":")[0]
     for blocked in BLOCKED_DEMO_HOSTS:
         if host == blocked or host.endswith("." + blocked):
             return False, f"Demo host '{host}' is not allowed (blocked: {blocked})."

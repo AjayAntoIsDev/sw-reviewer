@@ -1,3 +1,20 @@
 .env
 .kilocode
 .venv
+
+# Build artifacts and packaging
+*.egg-info/
+dist/
+build/
+__pycache__/
+*.pyc
+*.pyo
+
+# Test artifacts
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Runtime artifacts (generated during execution, not source)
+artifacts/
+reviewer_state.db

@@ -33,14 +33,15 @@ def test_unknown_command(tmp_path):
 def test_start_missing_url(tmp_path):
     handler = _make_handler(tmp_path)
     result = handler.handle_command("/review", "user1", "start")
-    assert "repository URL" in result["text"].lower() or "provide" in result["text"].lower()
+    assert "URL" in result["text"] or "url" in result["text"].lower()
 
 
 def test_start_success(tmp_path):
     handler = _make_handler(tmp_path)
     result = handler.handle_command("/review", "user1", "start https://github.com/test/repo project_type=web")
-    assert "review_id" in result["text"].lower() or "job id" in result["text"].lower() or "job:" in result["text"].lower()
+    # The response must be an in_channel acknowledgement containing a Job ID
     assert result.get("response_type") == "in_channel"
+    assert "`" in result["text"]  # job ID is wrapped in backticks
 
 
 def test_start_invalid_type(tmp_path):

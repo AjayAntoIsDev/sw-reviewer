@@ -1,6 +1,6 @@
 from enum import Enum
 from typing import Optional, Dict, Any, List
-from datetime import datetime
+from datetime import datetime, timezone
 from pydantic import BaseModel, Field
 import json
 import sqlite3
@@ -19,8 +19,8 @@ class JobState(BaseModel):
     """Represents the current state of a review job."""
     review_id: str = Field(..., description="Unique ID for the job")
     status: JobStatus = Field(default=JobStatus.PENDING, description="Current status of the job")
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     repository_url: str = Field(..., description="Target repository URL")
     
     # Store partial results as serialized JSON or dicts
@@ -71,7 +71,7 @@ class JobRepository:
     def update_job_status(self, review_id: str, status: JobStatus, error_message: Optional[str] = None):
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            now = datetime.utcnow().isoformat()
+            now = datetime.now(timezone.utc).isoformat()
             cursor.execute("""
                 UPDATE jobs 
                 SET status = ?, updated_at = ?, error_message = COALESCE(?, error_message)
@@ -82,7 +82,7 @@ class JobRepository:
     def save_context(self, review_id: str, context_data: Dict[str, Any]):
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            now = datetime.utcnow().isoformat()
+            now = datetime.now(timezone.utc).isoformat()
             cursor.execute("""
                 UPDATE jobs 
                 SET context_data = ?, updated_at = ?
