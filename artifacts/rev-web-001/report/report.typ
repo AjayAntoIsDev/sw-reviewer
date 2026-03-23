@@ -12,7 +12,7 @@
   gutter: 0.5em,
   [*Review ID:*], [rev-web-001],
   [*Repository:*], [https://github.com/test/webapp],
-  [*Generated:*], [2026-03-23 15:15 UTC],
+  [*Generated:*], [2026-03-23 15:22 UTC],
   [*Verdict:*], [*REJECT*],
 )
 
@@ -31,7 +31,7 @@ Rejected: 1 required check(s) failed. execution_success: No primary flow or comm
   [*Check*], [*Result*], [*Reason*],
   [repo_url_present], [✅], [Repository URL is present.],
   [project_type_supported], [✅], [Project type 'web' is supported.],
-  [readme_sufficient], [✅], [README is sufficient (321 chars, keywords: \['run', 'usage', 'install'\]).],
+  [readme_sufficient], [✅], [README is sufficient (321 chars, keywords: \['install', 'run', 'usage'\]).],
   [open_source_heuristic], [✅], [Repository appears to be on a public hosting platform.],
   [no_special_review_account], [✅], [No indication of a required special review account.],
   [not_previously_submitted], [✅], [Manual confirmation required; assumed OK pending human review.],
@@ -47,7 +47,7 @@ Rejected: 1 required check(s) failed. execution_success: No primary flow or comm
   #table(
     columns: (1fr, auto, auto),
     [*Flow*], [*Success*], [*Duration (ms)*],
-    [main_demo], [❌], [404],
+    [main_demo], [❌], [410],
   )
 ]
 

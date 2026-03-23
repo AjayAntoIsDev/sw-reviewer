@@ -33,7 +33,7 @@
         "description": "README must explain purpose and basic usage (heuristic: ≥150 chars, contains usage/install keywords)."
       },
       "passed": true,
-      "reasoning": "README is sufficient (281 chars, keywords: ['usage', 'install']).",
+      "reasoning": "README is sufficient (281 chars, keywords: ['install', 'usage']).",
       "evidence_refs": []
     },
     {
@@ -99,7 +99,7 @@
       "exit_code": 1,
       "stdout_ref": "cli_stdout_0",
       "stderr_ref": "cli_stderr_0",
-      "duration_ms": 4750,
+      "duration_ms": 1426,
       "success": false
     }
   ],

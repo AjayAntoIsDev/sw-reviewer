@@ -1,7 +1,7 @@
 {
-  "review_id": "rev-web-001",
+  "review_id": "b43fd66a",
   "decision": "reject",
-  "summary": "Rejected: 1 required check(s) failed. execution_success: No primary flow or command completed successfully.",
+  "summary": "Rejected: 2 required check(s) failed. readme_sufficient: README text is absent.; execution_success: No primary flow or command completed successfully.",
   "check_results": [
     {
       "policy": {
@@ -32,8 +32,8 @@
         "level": "required",
         "description": "README must explain purpose and basic usage (heuristic: ≥150 chars, contains usage/install keywords)."
       },
-      "passed": true,
-      "reasoning": "README is sufficient (321 chars, keywords: ['install', 'run', 'usage']).",
+      "passed": false,
+      "reasoning": "README text is absent.",
       "evidence_refs": []
     },
     {
@@ -110,9 +110,9 @@
       "url_visited": "https://myapp.vercel.app/",
       "screenshots": [],
       "console_errors": [],
-      "duration_ms": 410
+      "duration_ms": 407
     }
   ],
   "cli_results": [],
-  "report_url": null
+  "report_url": "artifacts/b43fd66a/report/report.typ"
 }

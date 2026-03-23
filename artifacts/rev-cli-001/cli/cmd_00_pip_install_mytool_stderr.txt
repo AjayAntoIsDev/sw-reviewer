@@ -1,24 +1,3 @@
-Unable to find image 'python:3.12-slim' locally
-3.12-slim: Pulling from library/python
-ec781dee3f47: Pulling fs layer
-b1a20e2fae4c: Pulling fs layer
-a6d1911b36ac: Pulling fs layer
-e3c59d77c03e: Pulling fs layer
-e3c59d77c03e: Waiting
-b1a20e2fae4c: Verifying Checksum
-b1a20e2fae4c: Download complete
-a6d1911b36ac: Verifying Checksum
-a6d1911b36ac: Download complete
-ec781dee3f47: Verifying Checksum
-ec781dee3f47: Download complete
-e3c59d77c03e: Verifying Checksum
-e3c59d77c03e: Download complete
-ec781dee3f47: Pull complete
-b1a20e2fae4c: Pull complete
-a6d1911b36ac: Pull complete
-e3c59d77c03e: Pull complete
-Digest: sha256:[REDACTED]
-Status: Downloaded newer image for python:3.12-slim
 WARNING: The directory '/nonexistent/.cache/pip' or its parent directory is not owned or is not writable by the current user. The cache has been disabled. Check the permissions and owner of that directory. If executing pip with sudo, you should use sudo's -H flag.
 ERROR: Could not install packages due to an OSError: Could not find a suitable TLS CA certificate bundle, invalid path: /etc/ssl/certs/ca-certificates.crt
 

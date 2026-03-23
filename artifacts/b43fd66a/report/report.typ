@@ -10,8 +10,8 @@
 #grid(
   columns: (auto, 1fr),
   gutter: 0.5em,
-  [*Review ID:*], [rev-cli-001],
-  [*Repository:*], [https://github.com/test/clitool],
+  [*Review ID:*], [b43fd66a],
+  [*Repository:*], [https://github.com/test/myrepo],
   [*Generated:*], [2026-03-23 15:22 UTC],
   [*Verdict:*], [*REJECT*],
 )
@@ -20,7 +20,7 @@
 
 == Summary
 
-Rejected: 1 required check(s) failed. execution_success: No primary flow or command completed successfully.
+Rejected: 2 required check(s) failed. readme_sufficient: README text is absent.; execution_success: No primary flow or command completed successfully.
 
 ---
 
@@ -30,34 +30,35 @@ Rejected: 1 required check(s) failed. execution_success: No primary flow or comm
   columns: (1fr, auto, 2fr),
   [*Check*], [*Result*], [*Reason*],
   [repo_url_present], [✅], [Repository URL is present.],
-  [project_type_supported], [✅], [Project type 'cli' is supported.],
-  [readme_sufficient], [✅], [README is sufficient (281 chars, keywords: \['install', 'usage'\]).],
+  [project_type_supported], [✅], [Project type 'web' is supported.],
+  [readme_sufficient], [❌], [README text is absent.],
   [open_source_heuristic], [✅], [Repository appears to be on a public hosting platform.],
   [no_special_review_account], [✅], [No indication of a required special review account.],
   [not_previously_submitted], [✅], [Manual confirmation required; assumed OK pending human review.],
-  [cli_commands_present], [✅], [1 CLI command(s) documented.],
+  [web_demo_url_present], [✅], [Demo URL is present.],
+  [web_demo_host_allowed], [✅], [Demo host 'myapp.vercel.app' passes the allowed-host check.],
   [execution_success], [❌], [No primary flow or command completed successfully.],
 )
 
-#if false [
+#if true [
   ---
   == Web Flow Results
 
   #table(
     columns: (1fr, auto, auto),
     [*Flow*], [*Success*], [*Duration (ms)*],
-    [No web results], [], [],
+    [main_demo], [❌], [407],
   )
 ]
 
-#if true [
+#if false [
   ---
   == CLI Command Results
 
   #table(
     columns: (2fr, auto, auto),
     [*Command*], [*Exit Code*], [*Duration (ms)*],
-    [pip install mytool], [1], [1426],
+    [No CLI results], [], [],
   )
 ]
 

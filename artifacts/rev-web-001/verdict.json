@@ -33,7 +33,7 @@
         "description": "README must explain purpose and basic usage (heuristic: ≥150 chars, contains usage/install keywords)."
       },
       "passed": true,
-      "reasoning": "README is sufficient (321 chars, keywords: ['run', 'usage', 'install']).",
+      "reasoning": "README is sufficient (321 chars, keywords: ['install', 'run', 'usage']).",
       "evidence_refs": []
     },
     {
@@ -110,7 +110,7 @@
       "url_visited": "https://myapp.vercel.app/",
       "screenshots": [],
       "console_errors": [],
-      "duration_ms": 404
+      "duration_ms": 410
     }
   ],
   "cli_results": [],
