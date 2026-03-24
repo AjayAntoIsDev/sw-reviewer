@@ -1,3 +1,0 @@
-- Link SQLite directly into an ORM if the schema complexity grows.
-- Explore an external database option if the service goes stateless and distributed.
-- Begin the Slack interaction testing integrating `/review status` into querying the newly built `JobRepository`.

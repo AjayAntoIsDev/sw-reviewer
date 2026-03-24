@@ -1,2 +1,0 @@
-- `src/sw_reviewer/orchestrator.py`: New file implementing the Pydantic-AI `Agent` with tools corresponding to web, CLI, and policy evaluation stages.
-- `AI/MASTER_TODO.md`: Marked T03 status as `DONE`.

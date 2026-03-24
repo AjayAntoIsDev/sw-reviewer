@@ -1,3 +1,0 @@
-- Integration with real execution paths for UI testing and Web interactions.
-- Implementation of the CLI sandbox runner interactions required by the CLI agent.
-- Integration tests over state persistence to handle timeouts and retries on agent execution failures.
