@@ -20,73 +20,40 @@ You can navigate, read, interact with, and debug web applications.
 
 Core browser workflow:
 1. browser_navigate(url) — open a page
-2. browser_snapshot() — get interactive elements as @e1, @e2 refs
-3. browser_click(@eN) / browser_fill(@eN, text) — interact with elements
+2. browser_snapshot() — get interactive elements with [N] index refs
+3. browser_click(N) / browser_fill(N, text) — interact by element index
 4. Always re-snapshot after navigation or DOM changes
+
+Element indices:
+- Elements in the snapshot are shown as [N] where N is a number
+- Use this number as the 'index' parameter for click, fill, hover, etc.
+- Indices become stale after DOM changes — always re-snapshot first
 
 You also have access to:
 - Navigation: back, forward, reload
-- Reading: get_text, get_html, get_attribute, get_url, get_title, full snapshots
-- Interaction: type, press keys, hover, focus, select dropdowns, check/uncheck, scroll, double-click
-- Visual: screenshots (plain or annotated with element labels)
+- Reading: get_text, get_html, get_attribute, get_url, get_title
+- Interaction: fill, hover, focus, select dropdowns, check, drag
+- Keyboard: press keys (Enter, Tab, Escape, Control+a), type text
+- Scrolling: scroll up/down/left/right
+- Visual: screenshots (base64 or file)
 - Tabs: open, close, list, switch between tabs
-- Debugging: view console logs, page errors, network requests
-- JavaScript: run arbitrary JS via browser_eval
-- State: check element visibility/enabled, read cookies and storage
-- Waiting: wait for elements, text, URLs, or network idle
+- JavaScript: run arbitrary JS via browser_eval (use arrow function format)
+- Waiting: browser_wait(seconds)
 
-Finding elements — prefer browser_find over CSS selectors:
-- browser_find('text', 'Next', 'click') — click by visible text
-- browser_find('label', 'Email', 'fill', 'user@test.com') — fill by label
-- browser_find('role', 'button', 'click', name='Submit') — click by ARIA role + name
-- browser_find('placeholder', 'Search...', 'type', 'query') — type by placeholder
-- NEVER use CSS pseudo-selectors like :has-text() or :contains() — those are not valid CSS.
+Finding elements — two approaches:
+1. By snapshot index (preferred): browser_snapshot() then browser_click(42)
+2. By CSS selector: browser_get_text('h1'), browser_get_html('.content')
 
-Keyboard tools (no selector needed — type into focused element):
-- browser_keyboard_type('text') — real keystrokes, char by char
-- browser_keyboard_inserttext('text') — fast insert without key events
-- Workflow: browser_click(@eN) then browser_keyboard_type('value')
+Keyboard tools (no element index needed — acts on focused element):
+- browser_press('Enter') — single key or combo like 'Control+a'
+- browser_type('text') — character-by-character typing
 
-Batch operations (fast, atomic multi-step):
-- browser_batch('[["fill","@e1","user"],["fill","@e2","pass"],["click","@e3"]]')
-- Runs all commands in one process — faster and avoids race conditions.
-
-JavaScript dialogs (alert/confirm/prompt):
-- Clicking a button may open a JS prompt() — this blocks ALL CDP commands.
-- If browser_click times out right after clicking, a dialog is likely open.
-- Use browser_handle_dialog(accept=True, prompt_text='your text') to enter text
-  into a prompt() and accept it.  For alert/confirm: browser_handle_dialog(accept=True).
-- Do NOT call browser_recover — the page is fine, just waiting for dialog input.
-- Shims auto-dismiss alert() and confirm(), but NOT prompt() (you may need to enter text).
-
-Timeout escalation strategy (follow this order):
-1. browser_click(@eN) / browser_fill(@eN, text) — try native first (auto-retries on timeout)
-2. If timeout right after a click → likely a JS dialog, try browser_handle_dialog()
-3. browser_find('text', 'Button Text', 'click') — semantic locator (also auto-retries)
-4. browser_focus(@eN) + browser_keyboard_type('text') — keyboard fallback, no CDP mouse/eval
-5. browser_press('Enter') / browser_press('Tab') — pure keyboard navigation
-6. If ALL of the above time out → browser_recover() then re-navigate
-
-Date inputs (<input type="date"> with spinbuttons for Month/Day/Year):
-- browser_fill_date_keyboard(@eN, year=2000, month=3, day=15) — BEST: clicks the
-  first spinbutton and types MM Tab DD Tab YYYY like a human. Works with any framework.
-- browser_fill_spinbutton(@eN, '3') — fill a single spinbutton by ref (click + select all + type)
-- browser_js_fill_date('input[type=date]', year=2000, month=3, day=15) — JS setter fallback
-- NEVER use the calendar picker (date pickers often don't update spinbutton values).
-- NEVER use browser_fill on date inputs — it doesn't work with shadow DOM spinbuttons.
-
-Resilience for modern web apps:
-- After navigating: browser_js_install_shims() to disable animations + auto-dismiss dialogs
-- Covered elements: browser_js_dismiss_overlays() then retry
-- Loading states: browser_js_wait_idle() or browser_js_wait_interactable(selector)
-- React/Vue fills not registering: browser_js_fill(css_selector, value) fires framework events
-- Autocomplete widgets: browser_js_select_combobox(selector, text)
-- Rich text editors: browser_js_set_contenteditable(selector, text)
-- Hover menus: browser_js_hover_reveal(selector)
-- Links opening new tabs: browser_js_click_same_tab(selector)
-- React checkboxes: browser_js_check(selector)
-- All JS tools pierce shadow DOM and same-origin iframes.
-- Always re-snapshot after ANY interaction.
+Resilience tips:
+- If a click doesn't work, try browser_scroll('down') to reveal the element
+- Use browser_wait(2) if the page is still loading
+- Use browser_eval() for complex JS interactions
+- If the browser is hung, use browser_recover()
+- Always re-snapshot after ANY interaction
 
 Use these tools freely and creatively to accomplish any browsing task.
 """
@@ -126,7 +93,7 @@ logfire.configure(
 logfire.instrument_openai()
 
 _browser_tools = [
-    Tool(getattr(browser_tools, name))
+    Tool(getattr(browser_tools, name), sequential=True)
     for name in sorted(dir(browser_tools))
     if name.startswith('browser_') and callable(getattr(browser_tools, name))
 ]
@@ -139,4 +106,3 @@ agent = Agent(
 )
 
 app = agent.to_web()
-
