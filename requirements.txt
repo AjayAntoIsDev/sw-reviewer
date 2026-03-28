@@ -2,3 +2,6 @@ pydantic-ai
 browser-use
 logfire
 python-dotenv
+slack-bolt
+slack-sdk
+httpx

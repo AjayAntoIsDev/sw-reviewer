@@ -1,66 +1,84 @@
-# PydanticAI Web UI
+# SW Reviewer
 
-This project now uses [`agent.to_web()`](app.py:52) directly instead of Gradio or the CLI wrapper.
+A software reviewer AI assistant with full browser access, powered by [Pydantic AI](https://ai.pydantic.dev/).
+Supports two interfaces: **Web UI** and **Slack**.
 
-## What the app does
+## Project structure
 
-- loads [`.env`](.env) from the project root
-- creates a reusable [`Agent`](app.py:46) using `openrouter:<model>`
-- configures [`logfire.configure()`](app.py:40) once at import time
-- exposes the built-in web UI via [`app = agent.to_web()`](app.py:52)
-- serves the app with [`app.serve()`](app.py:56)
+```
+sw_reviewer/
+  config.py           # Config loading, logfire setup
+  prompts.py           # System prompt
+  agent.py             # Agent creation + browser tool registration
+  browser_tools.py     # Browser automation tools (browser-use)
+  history.py           # Per-thread conversation history store
+  interfaces/
+    web.py             # Web UI (agent.to_web())
+    slack/
+      app.py           # Slack Bolt app + Assistant handlers
+      stream.py        # Pydantic-AI → Slack streaming bridge
+      files.py         # Slack file downloads → BinaryContent
+run_web.py             # Entry point: web interface
+run_slack.py           # Entry point: Slack interface
+```
 
 ## Environment variables
 
-Put these in [`.env`](.env):
+Put these in `.env`:
 
-- `OPENROUTER_API_KEY` — required
-- `MODEL_NAME` — optional, defaults to `xiaomi/mimo-v2-pro`
-- `LOGFIRE_TOKEN` — optional, only needed if you want traces sent to Logfire cloud
-- `LOGFIRE_SERVICE_NAME` — optional, defaults to `pydanticai-openrouter-agent`
-
-Example:
-
-```env
-OPENROUTER_API_KEY=your_openrouter_key
-MODEL_NAME=xiaomi/mimo-v2-omni
-LOGFIRE_TOKEN=your_logfire_write_token
-LOGFIRE_SERVICE_NAME=sw-reviewer
-```
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `OPENROUTER_API_KEY` | ✅ | — | OpenRouter API key |
+| `MODEL_NAME` | — | `xiaomi/mimo-v2-pro` | Model to use via OpenRouter |
+| `LOGFIRE_TOKEN` | — | — | Logfire write token (optional) |
+| `LOGFIRE_SERVICE_NAME` | — | `pydanticai-openrouter-agent` | Service name in Logfire |
+| `SLACK_BOT_TOKEN` | For Slack | — | Slack bot token (`xoxb-...`) |
+| `SLACK_APP_TOKEN` | For Slack | — | Slack app-level token (`xapp-...`) |
+| `BROWSER_HEADLESS` | — | `0` | Set to `1` for headless browser |
 
 ## Install
 
 ```bash
 python -m venv .venv
-./.venv/bin/python -m pip install -r requirements.txt
+source .venv/bin/activate
+pip install -r requirements.txt
 ```
 
-## Run
+## Run — Web UI
 
 ```bash
-./.venv/bin/python app.py
+python run_web.py
 ```
 
-This starts the built-in PydanticAI web app from [`agent.to_web()`](app.py:52).
+## Run — Slack Bot
 
-## How Logfire should be set up
+### Slack app setup
 
-### Without Logfire cloud
+1. Create a Slack app at https://api.slack.com/apps (or use Slack CLI)
+2. Enable **Socket Mode** and generate an app-level token with `connections:write` scope
+3. Enable **Agents & AI Apps** in app features
+4. Add bot scopes: `assistant:write`, `chat:write`, `im:history`, `files:read`, `app_mentions:read`
+5. Subscribe to bot events: `assistant_thread_started`, `assistant_thread_context_changed`, `message.im`, `app_mention`
+6. Install the app to your workspace
 
-If `LOGFIRE_TOKEN` is not set in [`.env`](.env), [`logfire.configure()`](app.py:40) uses `send_to_logfire='if-token-present'`, so the app still runs normally without sending traces remotely.
+### Run
 
-### With Logfire cloud
+```bash
+python run_slack.py
+```
 
-1. Create a project in Logfire.
-2. Copy the project write token.
-3. Add `LOGFIRE_TOKEN` to [`.env`](.env).
-4. Optionally add `LOGFIRE_SERVICE_NAME` to identify this app in Logfire.
-5. Restart [`app.py`](app.py).
+### Slack features
 
-Because [`logfire.instrument_openai()`](app.py:45) is enabled and the [`Agent`](app.py:46) uses `instrument=True`, model activity from the web UI will be exported to Logfire when a token is present.
+- **Streaming responses** — text streams progressively into the thread
+- **Tool call visibility** — browser tool calls appear as task updates in the stream
+- **Image support** — send images in the thread and the agent can see them
+- **Conversation history** — each thread maintains its own conversation context
+- **Suggested prompts** — first interaction offers example prompts
+- **@mention support** — mention the bot in any channel to start a conversation in-thread
+- **Agent status** — shows "Thinking..." while the agent works
 
 ## Notes
 
-- The app uses OpenRouter through `openrouter:<model>` in [`Agent(...)`](app.py:46)
-- [`.gitignore`](.gitignore) already excludes [`.env`](.env)
-- You can add tools later with decorators such as [`@agent.tool_plain`](app.py:46) if needed
+- Web and Slack are separate processes — run them independently
+- All Slack threads share a single browser session (for now)
+- The agent uses OpenRouter via `openrouter:<model>`

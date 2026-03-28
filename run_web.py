@@ -1,4 +1,4 @@
-"""Legacy entry point — use run_web.py or run_slack.py instead."""
+"""Entry point for the web interface."""
 
 from sw_reviewer.config import configure_observability, load_config
 from sw_reviewer.agent import create_agent
