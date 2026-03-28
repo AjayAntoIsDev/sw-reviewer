@@ -17,6 +17,11 @@ class PreCheckResult(BaseModel):
     readme_exists: bool
     demo_url: str | None = None
     demo_url_reachable: bool | None = None
+    is_school_project: bool = False
+    is_business_project: bool = False
+    is_hackclub_inspired: bool = True
+    resubmission_count: int = 0
+    demo_url_flags: list[str] | None = None
     instant_reject: bool = False
     reject_reason: str | None = None
 
@@ -36,6 +41,10 @@ class ChecksResult(BaseModel):
     readme_boilerplate: CheckResult
     readme_substance: CheckResult
     demo_validity: CheckResult
+    demo_credentials: CheckResult
+    api_key_exposure: CheckResult
+    description_accuracy: CheckResult
+    demo_link_type: CheckResult
 
 class ReviewVerdict(str, Enum):
     APPROVE = "APPROVE"

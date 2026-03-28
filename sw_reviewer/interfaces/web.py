@@ -1,4 +1,4 @@
-"""Web interface — thin wrapper around agent.to_web()."""
+"""Web interface — wraps agent.to_web() for the Starlette chat UI."""
 
 from __future__ import annotations
 

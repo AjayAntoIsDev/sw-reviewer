@@ -16,28 +16,36 @@ Verify that the README and the repository are for the same project. Check that t
 
 ### 3. pre_flavortown_activity
 Check git commit history for activity before December 25, 2024 (pre-Flavortown). Use the GitHub API to inspect commits.
-- **pass**: No commits before Dec 25 2024, OR commits exist AND description mentions "UPDATED PROJECT"
-- **warn**: Commits before Dec 25 2024 but no "UPDATED PROJECT" mention
+- **pass**: No commits before Dec 25 2024, OR commits exist AND project is marked as "This is an update" in FT project settings
+- **warn**: Commits before Dec 25 2024 but not marked as update in FT settings (check both FT project page and description for "UPDATED PROJECT" mention)
 - **fail**: N/A (this is always pass or warn)
 
 ### 4. ai_disclosure
-Analyze the project description and README for signs of AI generation (generic phrasing, ChatGPT-style structure, boilerplate filler). If AI usage is detected, check whether the submission includes an AI disclosure.
-- **pass**: No AI signals detected, OR AI detected and disclosure present
-- **warn**: AI signals detected, no disclosure
+Analyze the project README for signs of AI generation (generic phrasing, ChatGPT-style structure like "🚀 Features", "Getting Started" with boilerplate content, overly polished language that doesn't match code quality). Also check the demo site/app for AI-generated content. If AI usage is detected, check whether the AI disclosure checkbox is set in the FT project settings (not just mentioned in description).
+- **pass**: No AI signals detected, OR AI detected and disclosure set in FT project settings
+- **warn**: AI signals detected in README/demo but no AI disclosure in FT project settings
 
 ### 5. commit_integrity
 Check commits for suspicious patterns:
 - No commits at all
-- All commits by someone other than the repo owner
+- All commits by someone other than the submitter (forked/copied project with no original contributions)
 - Single "Initial commit" with the entire project
-- **pass**: Normal commit history by the repo author
-- **warn**: Suspicious patterns detected
-- **fail**: No commits at all
+- Submitter has zero code contributions (only config/docs changes while someone else wrote all code)
+- **pass**: Normal commit history with meaningful contributions by the submitter
+- **warn**: Suspicious patterns detected (e.g., most code by others, single large commit)
+- **fail**: No commits at all, or submitter has made zero contributions to the codebase
 
 ### 6. readme_boilerplate
-Scan the README for boilerplate or placeholder content: `localhost`, `your-project`, `your-name`, `example.com`, `TODO`, `Lorem ipsum`, default CRA/Next.js/Vite scaffold text.
-- **pass**: No boilerplate detected
-- **fail**: Boilerplate or placeholder content found
+Scan the README for boilerplate or placeholder content:
+- Generic placeholders: `localhost`, `your-project`, `your-name`, `example.com`, `TODO`, `Lorem ipsum`
+- **React + Vite default**: Contains "React + Vite", "This template provides a minimal setup", "@vitejs/plugin-react", "HMR and some ESLint rules"
+- **Create React App default**: Contains "Getting Started with Create React App", "Available Scripts", "npm start / npm test / npm run build" boilerplate
+- **Next.js default**: Contains "This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`]"
+- **Vue CLI default**: Contains "Project setup", "Compiles and hot-reloads for development"
+- **Angular CLI default**: Contains "This project was generated with [Angular CLI]"
+- **README is pasted code**: The README content is just raw code (source files pasted as README content rather than documentation)
+- **pass**: No boilerplate detected, README contains original project-specific content
+- **fail**: Boilerplate, framework scaffold README, or pasted code detected
 
 ### 7. readme_substance
 Evaluate whether the README has substantial content. It should explain what the project is, how to use it, and any relevant setup. A few lines or a single paragraph is not enough for most project types (simple portfolio sites may have shorter READMEs).
@@ -50,15 +58,51 @@ Validate the demo link/artifact based on the detected project type. Refer to `de
 - **warn**: Demo exists but is on a discouraged platform
 - **fail**: Demo link/artifact is missing or wrong type (e.g., ngrok URL for a web app)
 
+### 9. demo_credentials
+Check if the project requires demo credentials or premade accounts for testing. Reviewers must be able to create their own account.
+- Check the README, description, and demo page for mentions of "demo account", "test credentials", "login with", "username: ... password: ...", premade login details
+- **pass**: No demo credentials required — reviewer can create own account or no auth needed
+- **fail**: Demo credentials or premade accounts are required for testing
+- **skip**: Project type doesn't involve authentication
+
+### 10. api_key_exposure
+Check for API keys leaked or hardcoded in public code. Scan repository files for patterns like hardcoded API keys, tokens, or secrets (not in `.env.example` or config templates — those are fine). Look for:
+- API keys directly in source code (not environment variables)
+- `.env` files committed with real keys
+- Keys in JavaScript/HTML source visible in browser
+- Previously leaked keys reported by services
+- **pass**: No hardcoded API keys found in source code
+- **warn**: Potential API key patterns found in source (may be examples)
+- **fail**: Clearly hardcoded real API keys found in public source code
+
+### 11. description_accuracy
+Compare features described in the project description and README against what actually exists in the code/demo. Check that claimed features are real — not aspirational or copied from a template.
+- **pass**: Features described match what's in the codebase
+- **warn**: Minor discrepancies between description and actual features
+- **fail**: Major features claimed in description don't exist in the project
+
+### 12. demo_link_type
+Validate the demo link against the general rejection rules (separate from type-specific demo_validity). Check for universally rejected link types:
+- Google Drive links
+- Google Colab links
+- Hugging Face links
+- Render/Railway free tier links (for web apps)
+- Zip files of source code
+- Raw source files (.py, .js)
+- **pass**: Demo link is not on any rejected platform
+- **fail**: Demo link uses a universally rejected platform/format
+
 ## How to check
 
 - Use the GitHub API for commit history, repo contents, and metadata.
 - Use browser tools to inspect README content and demo URLs.
 - Compare submission fields against repo contents for consistency checks.
+- Scan source files in the repository for hardcoded API keys, tokens, and secrets.
+- Compare the project description and README claims against actual code and demo functionality.
 
 ## Output format
 
-Return structured output with these 9 fields. Each field is an object with `status` ("pass", "fail", "warn", or "skip") and `details` (string explanation):
+Return structured output with these 12 fields. Each field is an object with `status` ("pass", "fail", "warn", or "skip") and `details` (string explanation):
 
 - `readme_is_raw_github`: Check #1 result
 - `readme_matches_repo`: Check #2 result
@@ -69,3 +113,7 @@ Return structured output with these 9 fields. Each field is an object with `stat
 - `readme_boilerplate`: Check #6 result
 - `readme_substance`: Check #7 result
 - `demo_validity`: Check #8 result
+- `demo_credentials`: Check #9 result
+- `api_key_exposure`: Check #10 result
+- `description_accuracy`: Check #11 result
+- `demo_link_type`: Check #12 result
