@@ -25,6 +25,7 @@ def _collect_shipwrights_tools() -> list[Tool]:
 
 
 def create_agent(config: AppConfig) -> Agent:
+    """Create the legacy single-agent (used by Slack/web interfaces)."""
     return Agent(
         f'openrouter:{config.model_name}',
         instructions=SYSTEM_PROMPT,
