@@ -16,6 +16,7 @@ from pydantic_ai import (
     TextPartDelta,
 )
 from pydantic_ai.messages import ModelMessage
+from slack_sdk.errors import SlackApiError
 from slack_sdk.models.messages.chunk import TaskUpdateChunk
 
 if TYPE_CHECKING:
@@ -55,12 +56,45 @@ async def run_agent_streaming(
     text_buffer = ''
     last_flush = asyncio.get_event_loop().time()
     tool_id_counter = 0
+    stream_alive = True
+
+    def _is_dead_stream(exc: SlackApiError) -> bool:
+        try:
+            return exc.response and exc.response.get('error') == 'message_not_in_streaming_state'
+        except Exception:
+            return False
+
+    async def safe_append(*, markdown_text: str | None = None, chunks: list | None = None) -> bool:
+        nonlocal stream_alive
+        if not stream_alive:
+            return False
+        try:
+            await streamer.append(markdown_text=markdown_text, chunks=chunks or [])
+            return True
+        except SlackApiError as exc:
+            if _is_dead_stream(exc):
+                stream_alive = False
+                logger.info('Slack stream is no longer active; suppressing further appends')
+                return False
+            raise
+
+    async def safe_stop() -> None:
+        nonlocal stream_alive
+        if not stream_alive:
+            return
+        try:
+            await streamer.stop()
+        except SlackApiError as exc:
+            if _is_dead_stream(exc):
+                stream_alive = False
+                return
+            raise
 
     try:
         async def flush_text() -> None:
             nonlocal text_buffer, last_flush
             if text_buffer:
-                await streamer.append(markdown_text=text_buffer, chunks=[])
+                await safe_append(markdown_text=text_buffer)
                 text_buffer = ''
                 last_flush = asyncio.get_event_loop().time()
 
@@ -88,7 +122,7 @@ async def run_agent_streaming(
                 await flush_text()
                 tool_id_counter += 1
                 call_id = event.part.tool_call_id or f'tool_{tool_id_counter}'
-                await streamer.append(
+                await safe_append(
                     chunks=[
                         TaskUpdateChunk(
                             id=call_id,
@@ -105,7 +139,7 @@ async def run_agent_streaming(
                 call_id = result_part.tool_call_id or f'tool_{tool_id_counter}'
                 outcome = getattr(result_part, 'outcome', 'success')
                 status = 'error' if outcome == 'failed' else 'complete'
-                await streamer.append(
+                await safe_append(
                     chunks=[
                         TaskUpdateChunk(
                             id=call_id,
@@ -142,16 +176,7 @@ async def run_agent_streaming(
     except Exception:
         logger.exception('Agent streaming error')
         if text_buffer:
-            try:
-                await streamer.append(markdown_text=text_buffer)
-            except Exception:
-                pass
-        try:
-            await streamer.append(markdown_text='\n\n:warning: An error occurred while processing.')
-        except Exception:
-            pass
+            await safe_append(markdown_text=text_buffer)
+        await safe_append(markdown_text='\n\n:warning: An error occurred while processing.')
     finally:
-        try:
-            await streamer.stop()
-        except Exception:
-            logger.exception('Failed to stop Slack stream')
+        await safe_stop()

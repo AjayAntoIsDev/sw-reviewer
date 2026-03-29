@@ -3,7 +3,7 @@ import json
 import logging
 from dataclasses import dataclass
 from pathlib import Path
-from pydantic_ai import Agent
+from pydantic_ai import Agent, PromptedOutput, UsageLimits
 from pydantic_ai.tools import Tool
 from sw_reviewer import browser_tools, shipwrights_tools
 from sw_reviewer.config import AppConfig
@@ -36,9 +36,9 @@ def _create_precheck_agent(config: AppConfig) -> Agent:
         f'openrouter:{config.model_name}',
         instructions=prompt,
         instrument=True,
-        retries=3,
+        retries=5,
         tools=_collect_browser_tools() + _collect_shipwrights_tools(),
-        output_type=PreCheckResult,
+        output_type=PromptedOutput(PreCheckResult),
     )
 
 def _create_checks_agent(config: AppConfig) -> Agent:
@@ -49,9 +49,9 @@ def _create_checks_agent(config: AppConfig) -> Agent:
         f'openrouter:{config.model_name}',
         instructions=full_prompt,
         instrument=True,
-        retries=3,
+        retries=5,
         tools=_collect_browser_tools() + _collect_shipwrights_tools(),
-        output_type=ChecksResult,
+        output_type=PromptedOutput(ChecksResult),
     )
 
 def _create_reviewer_agent(config: AppConfig) -> Agent:
@@ -60,8 +60,8 @@ def _create_reviewer_agent(config: AppConfig) -> Agent:
         f'openrouter:{config.model_name}',
         instructions=prompt,
         instrument=True,
-        retries=3,
-        output_type=ReviewResult,
+        retries=10,
+        output_type=PromptedOutput(ReviewResult),
     )
 
 @dataclass
@@ -135,7 +135,8 @@ async def run_checks(
         f"Pre-check results:\n{precheck.model_dump_json(indent=2)}\n\n"
         f"Description: {proj.description or 'Not provided'}\n"
         f"Repository URL: {proj.repo_url}\n"
-        f"Demo URL: {proj.demo_url or 'Not provided'}\n"
+        f"Demo URL: {proj.demo_url or 'Not provided'}\n",
+        usage_limits=UsageLimits(tool_calls_limit=100)
     )
     logger.info("Checks complete")
     return result.output
@@ -163,6 +164,7 @@ async def run_reviewer(
         f"Repository URL: {proj.repo_url}\n"
         f"Demo URL: {proj.demo_url or 'Not provided'}\n"
     )
+
     result = await agent.run(prompt)
     logger.info("Review complete: verdict=%s", result.output.verdict)
     return result.output

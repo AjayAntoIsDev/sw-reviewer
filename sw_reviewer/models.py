@@ -17,9 +17,6 @@ class PreCheckResult(BaseModel):
     readme_exists: bool
     demo_url: str | None = None
     demo_url_reachable: bool | None = None
-    is_school_project: bool = False
-    is_business_project: bool = False
-    is_hackclub_inspired: bool = True
     resubmission_count: int = 0
     demo_url_flags: list[str] | None = None
     instant_reject: bool = False
