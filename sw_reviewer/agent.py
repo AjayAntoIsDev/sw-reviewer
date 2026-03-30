@@ -9,6 +9,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from pydantic_ai import Agent
+from pydantic_ai.models.openrouter import OpenRouterModelSettings
 from pydantic_ai.tools import Tool
 
 from sw_reviewer import browser_tools, review_tools, shipwrights_tools
@@ -94,5 +95,9 @@ def create_agent(config: AppConfig) -> Agent:
         f'openrouter:{config.model_name}',
         instructions=_build_system_prompt(),
         instrument=True,
+        model_settings=OpenRouterModelSettings(
+            timeout=120,
+            openrouter_reasoning={'effort': 'medium'},
+        ),
         tools=_collect_review_tools() + _collect_shipwrights_tools() + _collect_browser_tools(),
     )

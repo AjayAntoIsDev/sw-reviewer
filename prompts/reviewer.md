@@ -21,6 +21,7 @@ Weigh all check results to reach a verdict:
 - **REJECT** if any check has status `fail` that relates to a core requirement:
   - `commit_authorship` fail: submitter has not contributed code
   - `readme_substance` fail: README is too short or lacks content
+  - `readme_language` fail: README is not in English and has no English translation link
   - `readme_boilerplate` fail: README is a framework template or pasted code
   - `demo_validity` fail: demo link/artifact is missing or wrong type for project
   - `demo_link_type` fail: demo uses a universally rejected platform (Google Drive, Colab, Hugging Face, Render, Railway)

@@ -91,12 +91,19 @@ async def run_agent_streaming(
             raise
 
     try:
+        flush_task: asyncio.Task | None = None
+
         async def flush_text() -> None:
-            nonlocal text_buffer, last_flush
-            if text_buffer:
-                await safe_append(markdown_text=text_buffer)
-                text_buffer = ''
-                last_flush = asyncio.get_event_loop().time()
+            nonlocal text_buffer, last_flush, flush_task
+            if not text_buffer:
+                return
+            # Wait for any in-flight flush before starting a new one
+            if flush_task is not None and not flush_task.done():
+                await flush_task
+            chunk = text_buffer
+            text_buffer = ''
+            last_flush = asyncio.get_event_loop().time()
+            flush_task = asyncio.create_task(safe_append(markdown_text=chunk))
 
         async def maybe_flush() -> None:
             now = asyncio.get_event_loop().time()
@@ -166,8 +173,10 @@ async def run_agent_streaming(
                     except Exception:
                         logger.exception('Failed to upload screenshot to Slack')
 
-        # Flush remaining text
+        # Flush remaining text and wait for it to complete
         await flush_text()
+        if flush_task is not None and not flush_task.done():
+            await flush_task
 
         # Save conversation history
         if result_event is not None:
@@ -175,6 +184,8 @@ async def run_agent_streaming(
 
     except Exception:
         logger.exception('Agent streaming error')
+        if flush_task is not None and not flush_task.done():
+            await flush_task
         if text_buffer:
             await safe_append(markdown_text=text_buffer)
         await safe_append(markdown_text='\n\n:warning: An error occurred while processing.')

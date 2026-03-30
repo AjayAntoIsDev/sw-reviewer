@@ -37,6 +37,7 @@ class ChecksResult(BaseModel):
     commit_authorship: CheckResult
     readme_boilerplate: CheckResult
     readme_substance: CheckResult
+    readme_language: CheckResult
     demo_validity: CheckResult
     demo_credentials: CheckResult
     api_key_exposure: CheckResult

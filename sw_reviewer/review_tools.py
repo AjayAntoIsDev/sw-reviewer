@@ -371,6 +371,55 @@ async def review_fetch_flavortown_project(ft_url: str) -> str:
         return _err(f'Failed to fetch Flavortown project: {e}')
 
 
+async def review_get_github_releases(repo_url: str) -> str:
+    """Fetch GitHub Releases for a repository and list their assets.
+
+    Returns release names, tags, and asset details (file name, size,
+    download count, content type). Use this to verify that CLI tools
+    and desktop apps have actual compiled binaries in their releases
+    (not just source code archives).
+    """
+    parsed = _parse_github_url(repo_url)
+    if not parsed:
+        return _err(f'Could not parse GitHub URL: {repo_url}')
+    owner, repo = parsed
+
+    try:
+        async with httpx.AsyncClient(timeout=_TIMEOUT, headers=_github_headers()) as client:
+            r = await client.get(
+                f'{_GITHUB_API}/repos/{owner}/{repo}/releases',
+                params={'per_page': 10},
+            )
+
+        if r.status_code != 200:
+            return _err(f'GitHub API returned status {r.status_code}')
+
+        releases = []
+        for rel in r.json():
+            assets = []
+            for a in rel.get('assets', []):
+                assets.append({
+                    'name': a.get('name'),
+                    'size_bytes': a.get('size'),
+                    'content_type': a.get('content_type'),
+                    'download_count': a.get('download_count'),
+                })
+            releases.append({
+                'tag': rel.get('tag_name'),
+                'name': rel.get('name'),
+                'prerelease': rel.get('prerelease', False),
+                'draft': rel.get('draft', False),
+                'created_at': rel.get('created_at'),
+                'asset_count': len(assets),
+                'assets': assets,
+                'has_source_only': len(assets) == 0,
+            })
+
+        return _ok({'total_fetched': len(releases), 'releases': releases})
+    except Exception as e:
+        return _err(f'Failed to fetch releases: {e}')
+
+
 async def review_search_github_code(repo_url: str, query: str) -> str:
     """Search for code patterns in a GitHub repository.
 

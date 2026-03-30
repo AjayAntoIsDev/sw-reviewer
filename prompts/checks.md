@@ -52,6 +52,11 @@ Evaluate whether the README has substantial content. It should explain what the 
 - **pass**: README is substantive and informative
 - **fail**: README is too short or lacks meaningful content
 
+### 7b. readme_language
+Check that the README is written in English. If the README is in another language, check whether there is a link to an English version at the top of the file. READMEs must be accessible to English-speaking reviewers.
+- **pass**: README is in English, or has an English translation link at the top
+- **fail**: README is in a non-English language with no English version linked
+
 ### 8. demo_validity
 Validate the demo link/artifact based on the detected project type. Refer to `demo_guidelines.md` for type-specific rules. Check that the link type is appropriate (e.g., web apps should have a live URL, not a GitHub release; libraries should be on a package manager, not just GitHub). Do NOT test demo functionality — that is for human reviewers.
 - **pass**: Demo link/artifact matches the expected type
@@ -100,12 +105,13 @@ Validate the demo link against the general rejection rules (separate from type-s
 - Use `review_check_url(url)` to validate demo URLs and detect flagged platforms.
 - Use `review_fetch_page_text(url)` to read demo page content for verification.
 - Use `review_fetch_flavortown_project(ft_url)` to check FT project settings (AI disclosure, update flag).
+- Use `review_get_github_releases(repo_url)` to inspect GitHub Releases assets — use this for CLI tools/desktop apps to check whether releases contain actual compiled binaries or just auto-generated source archives.
 - Use `review_search_github_code(repo_url, query)` or `review_get_github_file_content` to scan for hardcoded API keys and secrets.
 - Compare submission fields against repo contents for consistency checks.
 
 ## Output format
 
-Return structured output with these 12 fields. Each field is an object with `status` ("pass", "fail", "warn", or "skip") and `details` (string explanation):
+Return structured output with these fields. Each field is an object with `status` ("pass", "fail", "warn", or "skip") and `details` (string explanation):
 
 - `readme_is_raw_github`: Check #1 result
 - `readme_matches_repo`: Check #2 result
@@ -115,6 +121,7 @@ Return structured output with these 12 fields. Each field is an object with `sta
 - `commit_authorship`: Check #5 result
 - `readme_boilerplate`: Check #6 result
 - `readme_substance`: Check #7 result
+- `readme_language`: Check #7b result
 - `demo_validity`: Check #8 result
 - `demo_credentials`: Check #9 result
 - `api_key_exposure`: Check #10 result
