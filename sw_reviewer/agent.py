@@ -1,11 +1,68 @@
+"""Single-agent setup for the SW Reviewer.
+
+One agent with browser + shipwrights tools and a comprehensive system prompt
+that covers the full review workflow. Returns plain text/markdown — no
+structured output models.
+"""
+
 from __future__ import annotations
+
+from pathlib import Path
 
 from pydantic_ai import Agent
 from pydantic_ai.tools import Tool
 
 from sw_reviewer import browser_tools, shipwrights_tools
 from sw_reviewer.config import AppConfig
-from sw_reviewer.prompts import SYSTEM_PROMPT
+
+PROMPTS_DIR = Path(__file__).resolve().parent.parent / 'prompts'
+
+
+def _load_prompt(name: str) -> str:
+    return (PROMPTS_DIR / name).read_text()
+
+
+def _build_system_prompt() -> str:
+    """Combine the browser instructions with the full review workflow."""
+    from sw_reviewer.prompts import SYSTEM_PROMPT
+
+    precheck = _load_prompt('precheck.md')
+    checks = _load_prompt('checks.md')
+    reviewer = _load_prompt('reviewer.md')
+    demo_guidelines = _load_prompt('demo_guidelines.md')
+
+    return (
+        f'{SYSTEM_PROMPT}\n\n'
+        '---\n\n'
+        '# Review Pipeline\n\n'
+        'When the user asks to review a project (e.g. "review the project 5683"), '
+        'perform all of the following stages in order within this single conversation. '
+        'Present your final review as markdown.\n\n'
+        '---\n\n'
+        '## Stage 1: Pre-Check\n\n'
+        f'{precheck}\n\n'
+        '---\n\n'
+        '## Stage 2: Checks\n\n'
+        f'{checks}\n\n'
+        '---\n\n'
+        '## Stage 3: Final Review\n\n'
+        f'{reviewer}\n\n'
+        '---\n\n'
+        '## Demo Guidelines Reference\n\n'
+        f'{demo_guidelines}\n\n'
+        '---\n\n'
+        '## Output Instructions\n\n'
+        'After performing all stages, present the final review as a **single markdown message** '
+        'with the following sections:\n\n'
+        '1. **Verdict**: APPROVE, REJECT, or FLAG_FOR_HUMAN\n'
+        '2. **Project type**: The detected project type\n'
+        '3. **Reasoning**: Detailed explanation referencing specific check results\n'
+        '4. **Required fixes** (if rejecting): Exactly what must change for approval\n'
+        '5. **Feedback**: Short helpful suggestions\n'
+        '6. **Special flags**: Any applicable flags (UPDATED PROJECT, AI CONCERN, etc.)\n'
+        '7. **Checks performed**: List of all checks evaluated with pass/fail/warn/skip status\n\n'
+        'Do NOT use structured JSON output. Write in clear, readable markdown.\n'
+    )
 
 
 def _collect_browser_tools() -> list[Tool]:
@@ -25,10 +82,10 @@ def _collect_shipwrights_tools() -> list[Tool]:
 
 
 def create_agent(config: AppConfig) -> Agent:
-    """Create the legacy single-agent (used by Slack/web interfaces)."""
+    """Create the single review agent with all tools and the full system prompt."""
     return Agent(
         f'openrouter:{config.model_name}',
-        instructions=SYSTEM_PROMPT,
+        instructions=_build_system_prompt(),
         instrument=True,
         tools=_collect_browser_tools() + _collect_shipwrights_tools(),
     )

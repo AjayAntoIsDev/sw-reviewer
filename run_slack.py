@@ -6,7 +6,7 @@ import logging
 from slack_bolt.adapter.socket_mode.async_handler import AsyncSocketModeHandler
 
 from sw_reviewer.config import configure_observability, load_config
-from sw_reviewer.pipeline_agent import create_pipeline_agent
+from sw_reviewer.agent import create_agent
 from sw_reviewer.interfaces.slack.app import create_slack_app
 
 logging.basicConfig(level=logging.INFO)
@@ -20,7 +20,7 @@ async def main() -> None:
     if not config.slack_app_token:
         raise RuntimeError('Missing SLACK_APP_TOKEN in .env — required for Socket Mode')
 
-    agent = create_pipeline_agent(config)
+    agent = create_agent(config)
     slack_app = create_slack_app(config, agent)
 
     handler = AsyncSocketModeHandler(slack_app, config.slack_app_token)
