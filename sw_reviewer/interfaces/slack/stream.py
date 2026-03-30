@@ -173,6 +173,23 @@ async def run_agent_streaming(
                     except Exception:
                         logger.exception('Failed to upload screenshot to Slack')
 
+                # Upload PDF review report to the Slack thread
+                if tool_name == 'review_generate_pdf':
+                    try:
+                        content = getattr(result_part, 'content', '')
+                        parsed = json.loads(content) if isinstance(content, str) else {}
+                        file_path = parsed.get('path', '')
+                        if file_path and os.path.isfile(file_path):
+                            await client.files_upload_v2(
+                                channel=channel_id,
+                                thread_ts=thread_ts,
+                                file=file_path,
+                                filename='review_report.pdf',
+                                initial_comment='',
+                            )
+                    except Exception:
+                        logger.exception('Failed to upload PDF report to Slack')
+
         # Flush remaining text and wait for it to complete
         await flush_text()
         if flush_task is not None and not flush_task.done():

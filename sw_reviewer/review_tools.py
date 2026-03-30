@@ -420,6 +420,51 @@ async def review_get_github_releases(repo_url: str) -> str:
         return _err(f'Failed to fetch releases: {e}')
 
 
+async def review_generate_pdf(review_json: str) -> str:
+    """Generate a PDF review report and return the file path.
+
+    Call this as the FINAL step of a review to produce the PDF report.
+    Pass a single JSON string containing all review data with these keys:
+      - verdict (str): "APPROVE", "REJECT", or "FLAG_FOR_HUMAN"
+      - project_type (str): detected project type
+      - checks (array): list of {"name": str, "status": str, "details": str}
+      - reasoning (str): full reasoning text
+      - repo_url (str): GitHub repo URL without https://
+      - demo_url (str): demo URL without https://
+      - project_name (str): project name from the submission
+      - project_desc (str): project description from the submission
+      - project_url (str): Flavortown project URL without https://
+      - required_fixes (array|null): list of fix strings (if rejecting)
+      - feedback (array|null): list of feedback strings
+      - special_flags (array|null): list of flag strings
+    """
+    from sw_reviewer.pdf_report import generate_review_pdf
+
+    try:
+        data = json.loads(review_json)
+    except (json.JSONDecodeError, TypeError) as e:
+        return _err(f'Invalid JSON input: {e}')
+
+    try:
+        path = generate_review_pdf(
+            verdict=data.get('verdict', 'UNKNOWN'),
+            project_type=data.get('project_type', ''),
+            checks=data.get('checks', []),
+            reasoning=data.get('reasoning', ''),
+            repo_url=data.get('repo_url', ''),
+            demo_url=data.get('demo_url', ''),
+            project_name=data.get('project_name', ''),
+            project_desc=data.get('project_desc', ''),
+            project_url=data.get('project_url', ''),
+            required_fixes=data.get('required_fixes'),
+            feedback=data.get('feedback'),
+            special_flags=data.get('special_flags'),
+        )
+        return json.dumps({'ok': True, 'path': str(path)})
+    except Exception as e:
+        return _err(f'Failed to generate PDF: {e}')
+
+
 async def review_search_github_code(repo_url: str, query: str) -> str:
     """Search for code patterns in a GitHub repository.
 
