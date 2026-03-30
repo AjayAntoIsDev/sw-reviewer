@@ -53,9 +53,9 @@ Evaluate whether the README has substantial content. It should explain what the 
 - **fail**: README is too short or lacks meaningful content
 
 ### 7b. readme_language
-Check that the README is written in English. If the README is in another language, check whether there is a link to an English version at the top of the file. READMEs must be accessible to English-speaking reviewers.
-- **pass**: README is in English, or has an English translation link at the top
-- **fail**: README is in a non-English language with no English version linked
+Check that the README's **prose and documentation** is written in English. Judge the language of the headings, paragraphs, and explanatory text — NOT code snippets, variable names, API field names, UI strings, or example output that may appear in code blocks or tables. A README written in English that contains non-English strings inside code examples, demo screenshots, or application-specific terminology (e.g., German UI labels in a localized app) is still an English README.
+- **pass**: README prose/documentation is in English, or has an English translation link at the top
+- **fail**: README prose/documentation (headings, paragraphs, setup instructions) is in a non-English language with no English version linked
 
 ### 8. demo_validity
 Validate the demo link/artifact based on the detected project type. Refer to `demo_guidelines.md` for type-specific rules. Check that the link type is appropriate (e.g., web apps should have a live URL, not a GitHub release; libraries should be on a package manager, not just GitHub). Do NOT test demo functionality — that is for human reviewers.
