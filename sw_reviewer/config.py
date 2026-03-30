@@ -19,6 +19,7 @@ class AppConfig:
     openrouter_api_key: str
     logfire_token: str | None
     logfire_service_name: str
+    github_token: str | None
     slack_bot_token: str | None
     slack_app_token: str | None
 
@@ -33,6 +34,7 @@ def load_config() -> AppConfig:
     return AppConfig(
         model_name=os.getenv('MODEL_NAME', DEFAULT_MODEL_NAME),
         openrouter_api_key=api_key,
+        github_token=os.getenv('GITHUB_TOKEN'),
         logfire_token=os.getenv('LOGFIRE_TOKEN'),
         logfire_service_name=os.getenv('LOGFIRE_SERVICE_NAME', 'pydanticai-openrouter-agent'),
         slack_bot_token=os.getenv('SLACK_BOT_TOKEN'),

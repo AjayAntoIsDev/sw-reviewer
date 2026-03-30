@@ -1,8 +1,7 @@
 """Single-agent setup for the SW Reviewer.
 
-One agent with browser + shipwrights tools and a comprehensive system prompt
-that covers the full review workflow. Returns plain text/markdown — no
-structured output models.
+One agent with review tools, shipwrights tools, and minimal browser fallback.
+Returns plain text/markdown — no structured output models.
 """
 
 from __future__ import annotations
@@ -12,7 +11,7 @@ from pathlib import Path
 from pydantic_ai import Agent
 from pydantic_ai.tools import Tool
 
-from sw_reviewer import browser_tools, shipwrights_tools
+from sw_reviewer import browser_tools, review_tools, shipwrights_tools
 from sw_reviewer.config import AppConfig
 
 PROMPTS_DIR = Path(__file__).resolve().parent.parent / 'prompts'
@@ -23,7 +22,7 @@ def _load_prompt(name: str) -> str:
 
 
 def _build_system_prompt() -> str:
-    """Combine the browser instructions with the full review workflow."""
+    """Combine the tool-usage guide with the full review workflow."""
     from sw_reviewer.prompts import SYSTEM_PROMPT
 
     precheck = _load_prompt('precheck.md')
@@ -65,6 +64,14 @@ def _build_system_prompt() -> str:
     )
 
 
+def _collect_review_tools() -> list[Tool]:
+    return [
+        Tool(getattr(review_tools, name))
+        for name in sorted(dir(review_tools))
+        if name.startswith('review_') and callable(getattr(review_tools, name))
+    ]
+
+
 def _collect_browser_tools() -> list[Tool]:
     return [
         Tool(getattr(browser_tools, name), sequential=True)
@@ -87,5 +94,5 @@ def create_agent(config: AppConfig) -> Agent:
         f'openrouter:{config.model_name}',
         instructions=_build_system_prompt(),
         instrument=True,
-        tools=_collect_browser_tools() + _collect_shipwrights_tools(),
+        tools=_collect_review_tools() + _collect_shipwrights_tools() + _collect_browser_tools(),
     )
