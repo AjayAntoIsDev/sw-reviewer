@@ -13,9 +13,10 @@ from pydantic_ai import (
     FunctionToolCallEvent,
     FunctionToolResultEvent,
     PartDeltaEvent,
+    PartStartEvent,
     TextPartDelta,
 )
-from pydantic_ai.messages import ModelMessage
+from pydantic_ai.messages import ModelMessage, TextPart
 from slack_sdk.errors import SlackApiError
 from slack_sdk.models.messages.chunk import TaskUpdateChunk
 
@@ -120,7 +121,12 @@ async def run_agent_streaming(
                 result_event = event
                 continue
 
-            if isinstance(event, PartDeltaEvent):
+            if isinstance(event, PartStartEvent):
+                if isinstance(event.part, TextPart) and event.part.content:
+                    text_buffer += event.part.content
+                    await maybe_flush()
+
+            elif isinstance(event, PartDeltaEvent):
                 if isinstance(event.delta, TextPartDelta):
                     text_buffer += event.delta.content_delta
                     await maybe_flush()

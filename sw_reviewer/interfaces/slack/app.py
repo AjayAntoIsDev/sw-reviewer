@@ -17,12 +17,53 @@ from sw_reviewer.interfaces.slack.stream import run_agent_streaming
 
 if TYPE_CHECKING:
     from pydantic_ai import Agent
+    from slack_sdk.web.async_client import AsyncWebClient
 
     from sw_reviewer.config import AppConfig
 
 logger = logging.getLogger(__name__)
 
 _MENTION_RE = re.compile(r'<@[A-Z0-9]+>\s*')
+
+
+async def _handle_message(
+    *,
+    agent: Agent,
+    config: AppConfig,
+    store: ConversationStore,
+    client: AsyncWebClient,
+    channel_id: str,
+    thread_ts: str,
+    team_id: str,
+    user_id: str,
+    user_message: str,
+    files: list[dict] | None,
+) -> None:
+    thread_key = (team_id, channel_id, thread_ts)
+    message_history = await store.get(thread_key)
+
+    try:
+        user_content = await build_user_content(
+            text=user_message,
+            files=files,
+            bot_token=config.slack_bot_token,
+        )
+    except Exception:
+        logger.exception('Failed to process user content')
+        user_content = user_message
+
+    await run_agent_streaming(
+        agent=agent,
+        user_content=user_content,
+        message_history=message_history,
+        client=client,
+        channel_id=channel_id,
+        thread_ts=thread_ts,
+        team_id=team_id,
+        user_id=user_id,
+        store=store,
+        thread_key=thread_key,
+    )
 
 
 def create_slack_app(config: AppConfig, agent: Agent) -> AsyncApp:
@@ -66,40 +107,20 @@ def create_slack_app(config: AppConfig, agent: Agent) -> AsyncApp:
         set_status,
         **kwargs,
     ):
-        channel_id = payload['channel']
-        thread_ts = payload['thread_ts']
-        user_message = payload.get('text', '')
-        files = payload.get('files')
-        team_id = context.team_id or ''
-        user_id = context.user_id or ''
-
         await set_status(status='Thinking...')
 
-        thread_key = (team_id, channel_id, thread_ts)
-        message_history = await store.get(thread_key)
-
         try:
-            user_content = await build_user_content(
-                text=user_message,
-                files=files,
-                bot_token=config.slack_bot_token,
-            )
-        except Exception:
-            logger.exception('Failed to process user content')
-            user_content = user_message
-
-        try:
-            await run_agent_streaming(
+            await _handle_message(
                 agent=agent,
-                user_content=user_content,
-                message_history=message_history,
-                client=client,
-                channel_id=channel_id,
-                thread_ts=thread_ts,
-                team_id=team_id,
-                user_id=user_id,
+                config=config,
                 store=store,
-                thread_key=thread_key,
+                client=client,
+                channel_id=payload['channel'],
+                thread_ts=payload['thread_ts'],
+                team_id=context.team_id or '',
+                user_id=context.user_id or '',
+                user_message=payload.get('text', ''),
+                files=payload.get('files'),
             )
         except Exception:
             logger.exception('Failed to run agent')
@@ -109,42 +130,28 @@ def create_slack_app(config: AppConfig, agent: Agent) -> AsyncApp:
 
     @app.event('app_mention')
     async def handle_app_mention(event: dict, client, context: AsyncBoltContext):
-        channel_id = event['channel']
-        thread_ts = event.get('thread_ts') or event['ts']
         raw_text = event.get('text', '')
         user_message = _MENTION_RE.sub('', raw_text).strip()
         files = event.get('files')
-        team_id = context.team_id or ''
-        user_id = event.get('user', '')
 
         if not user_message and not files:
             return
 
-        thread_key = (team_id, channel_id, thread_ts)
-        message_history = await store.get(thread_key)
+        channel_id = event['channel']
+        thread_ts = event.get('thread_ts') or event['ts']
 
         try:
-            user_content = await build_user_content(
-                text=user_message,
-                files=files,
-                bot_token=config.slack_bot_token,
-            )
-        except Exception:
-            logger.exception('Failed to process user content')
-            user_content = user_message
-
-        try:
-            await run_agent_streaming(
+            await _handle_message(
                 agent=agent,
-                user_content=user_content,
-                message_history=message_history,
+                config=config,
+                store=store,
                 client=client,
                 channel_id=channel_id,
                 thread_ts=thread_ts,
-                team_id=team_id,
-                user_id=user_id,
-                store=store,
-                thread_key=thread_key,
+                team_id=context.team_id or '',
+                user_id=event.get('user', ''),
+                user_message=user_message,
+                files=files,
             )
         except Exception:
             logger.exception('Failed to run agent for @mention')
