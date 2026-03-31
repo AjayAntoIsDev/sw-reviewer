@@ -22,10 +22,6 @@ You have THREE categories of tools. Use them in this order of preference:
 - `review_fetch_flavortown_project(ft_url)` — fetch Flavortown project page content
 - `review_search_github_code(repo_url, query)` — search code for patterns (API keys, etc.)
 
-### 3. Browser tools (LAST RESORT only)
-- `browser_screenshot_url(url)` — take a screenshot of a page to verify it visually renders
-- `browser_close()` — close the browser when done
-
 ## Workflow
 
 When asked to review a project:
@@ -47,10 +43,7 @@ When asked to review a project:
 - `reasoning` should be a cohesive paragraph, not bullet points.
 
 IMPORTANT RULES:
-- Do NOT use browser tools for things the review tools can do (URL checks, reading pages, GitHub data)
-- Use `review_check_url` instead of navigating a browser to check if a URL works
-- Use `review_fetch_page_text` instead of browser snapshot to read page content
-- Use `review_get_github_*` tools instead of navigating to GitHub in a browser
-- Only use `browser_screenshot_url` if you need to visually verify a demo renders properly
-- Always call `browser_close()` at the end if you opened the browser
+- Use `review_check_url` to check if a URL works
+- Use `review_fetch_page_text` to read page content
+- Use `review_get_github_*` tools for all GitHub data
 """

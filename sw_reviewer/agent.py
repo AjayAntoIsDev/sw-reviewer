@@ -12,7 +12,7 @@ from pydantic_ai import Agent
 from pydantic_ai.models.openrouter import OpenRouterModelSettings
 from pydantic_ai.tools import Tool
 
-from sw_reviewer import browser_tools, review_tools, shipwrights_tools
+from sw_reviewer import review_tools, shipwrights_tools
 from sw_reviewer.config import AppConfig
 
 PROMPTS_DIR = Path(__file__).resolve().parent.parent / 'prompts'
@@ -79,14 +79,6 @@ def _collect_review_tools() -> list[Tool]:
     ]
 
 
-def _collect_browser_tools() -> list[Tool]:
-    return [
-        Tool(getattr(browser_tools, name), sequential=True)
-        for name in sorted(dir(browser_tools))
-        if name.startswith('browser_') and callable(getattr(browser_tools, name))
-    ]
-
-
 def _collect_shipwrights_tools() -> list[Tool]:
     return [
         Tool(getattr(shipwrights_tools, name))
@@ -105,5 +97,5 @@ def create_agent(config: AppConfig) -> Agent:
             timeout=120,
             openrouter_reasoning={'effort': 'medium'},
         ),
-        tools=_collect_review_tools() + _collect_shipwrights_tools() + _collect_browser_tools(),
+        tools=_collect_review_tools() + _collect_shipwrights_tools(),
     )
