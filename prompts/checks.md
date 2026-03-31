@@ -77,16 +77,6 @@ Check if the project requires demo credentials or premade accounts for testing. 
 - **fail**: Demo requires premade credentials, shared test accounts, or pre-seeded login details to use
 - **skip**: Project type doesn't involve authentication
 
-### 10. api_key_exposure
-Check for API keys leaked or hardcoded in public code. Scan repository files for patterns like hardcoded API keys, tokens, or secrets (not in `.env.example` or config templates — those are fine). Look for:
-- API keys directly in source code (not environment variables)
-- `.env` files committed with real keys
-- Keys in JavaScript/HTML source visible in browser
-- Previously leaked keys reported by services
-- **pass**: No hardcoded API keys found in source code
-- **warn**: Potential API key patterns found in source (may be examples)
-- **fail**: Clearly hardcoded real API keys found in public source code
-
 ### 11. description_accuracy
 Compare features described in the project description and README against what actually exists in the code/demo. Check that claimed features are real — not aspirational or copied from a template.
 - **pass**: Features described match what's in the codebase
@@ -131,6 +121,5 @@ Return structured output with these fields. Each field is an object with `status
 - `readme_language`: Check #7b result
 - `demo_validity`: Check #8 result
 - `demo_credentials`: Check #9 result
-- `api_key_exposure`: Check #10 result
 - `description_accuracy`: Check #11 result
 - `demo_link_type`: Check #12 result

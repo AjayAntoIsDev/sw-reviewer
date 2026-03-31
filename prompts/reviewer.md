@@ -26,7 +26,6 @@ Weigh all check results to reach a verdict:
   - `demo_validity` fail: demo link/artifact is missing or wrong type for project
   - `demo_link_type` fail: demo uses a universally rejected platform (Google Drive, Colab, Hugging Face, Render, Railway)
   - `demo_credentials` fail: project requires demo credentials or premade accounts
-  - `api_key_exposure` fail: hardcoded API keys leaked in public code
   - `description_accuracy` fail: major features described don't exist in the project
   - `ai_detection` fail: AI usage detected without AI disclosure in FT project settings
 - **FLAG_FOR_HUMAN** if:
@@ -51,7 +50,6 @@ Return structured output with these fields:
   - "NEEDS HUMAN REVIEW (VR)" if project type is VR
   - "AI UNDISCLOSED" if ai_detection was fail
   - "RESUBMISSION SPAM" if resubmission_count >= 3
-  - "API KEY LEAKED" if api_key_exposure was fail
 
 ### Rules
 

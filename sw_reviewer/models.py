@@ -41,7 +41,6 @@ class ChecksResult(BaseModel):
     readme_language: CheckResult
     demo_validity: CheckResult
     demo_credentials: CheckResult
-    api_key_exposure: CheckResult
     description_accuracy: CheckResult
     demo_link_type: CheckResult
 
