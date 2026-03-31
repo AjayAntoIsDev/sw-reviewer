@@ -102,7 +102,7 @@
 
 #set text(fill: hc-snow, font: sans, size: 10pt, lang: "en")
 #show: set text(font: sans)
-#set par(justify: true, leading: 0.65em)
+#set par(justify: false, leading: 0.65em)
 
 // Custom Headings
 #set heading(numbering: none)
@@ -121,9 +121,9 @@
 
 // ── Top Banner ──────────────────────────────────────────────────────────────
 #rect(width: 100%, fill: hc-red, radius: 6pt, inset: 15pt)[
-  #text(fill: hc-white, size: 26pt, weight: "black")[#project_name] \
+  #text(fill: hc-white, size: 22pt, weight: "black")[#project_name] \
   #v(2pt)
-  #text(fill: hc-white.transparentize(20%), size: 11pt, weight: "medium")[
+  #text(fill: hc-white.transparentize(20%), size: 10pt, weight: "medium")[
     #project_desc
   ]
   #if repo_url != "" [
@@ -154,7 +154,7 @@
   rect(height: 72pt, fill: hc-card, stroke: 1pt + hc-border, radius: 6pt, inset: 12pt, width: 100%)[
     #text(size: 9pt, fill: hc-slate, weight: "bold")[PROJECT TYPE] \
     #v(4pt)
-    #text(size: 14pt, fill: hc-snow, weight: "black")[#project_type]
+    #text(size: 12pt, fill: hc-snow, weight: "black")[#project_type]
   ],
 
   rect(height: 72pt, fill: hc-card, stroke: 1pt + hc-border, radius: 6pt, inset: 12pt, width: 100%)[
@@ -199,7 +199,7 @@
     rect(width: 100%, fill: hc-red.transparentize(92%), stroke: 1.5pt + hc-red, radius: 6pt, inset: 12pt)[
       #text(fill: hc-red, weight: "bold", size: 11pt)[Required Fixes]
       #v(6pt)
-      // Standard bullet points
+      #set list(spacing: 12pt)
       #list(..required_fixes.map(f => text(fill: hc-smoke)[#f]))
     ]
   )
@@ -210,7 +210,7 @@
     rect(width: 100%, fill: hc-blue.transparentize(92%), stroke: 1.5pt + hc-blue, radius: 6pt, inset: 12pt)[
       #text(fill: hc-blue, weight: "bold", size: 11pt)[Feedback]
       #v(6pt)
-      // Standard bullet points
+      #set list(spacing: 12pt)
       #list(..feedback_items.map(f => text(fill: hc-smoke)[#f]))
     ]
   )

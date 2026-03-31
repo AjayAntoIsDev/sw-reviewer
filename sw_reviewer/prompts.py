@@ -41,6 +41,11 @@ When asked to review a project:
 9. **Inspect files** — call `review_get_github_file_content` for suspicious files
 10. **Compile verdict** — run through all checks and produce the final review
 
+## PDF report formatting rules
+- `project_type` must be a short label only (e.g. "Desktop App", "Web App", "Game", "CLI Tool"). Do NOT add parenthetical details like "(Java speech-to-text utility)".
+- Keep each `required_fixes` and `feedback` bullet to 1–2 sentences max. Be concise.
+- `reasoning` should be a cohesive paragraph, not bullet points.
+
 IMPORTANT RULES:
 - Do NOT use browser tools for things the review tools can do (URL checks, reading pages, GitHub data)
 - Use `review_check_url` instead of navigating a browser to check if a URL works

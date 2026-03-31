@@ -426,7 +426,7 @@ async def review_generate_pdf(review_json: str) -> str:
     Call this as the FINAL step of a review to produce the PDF report.
     Pass a single JSON string containing all review data with these keys:
       - verdict (str): "APPROVE", "REJECT", or "FLAG_FOR_HUMAN"
-      - project_type (str): detected project type
+      - project_type (str): short detected project type label (e.g. "Desktop App", "Web App", "Game", "CLI Tool" — no parenthetical details)
       - checks (array): list of {"name": str, "status": str, "details": str}
       - reasoning (str): full reasoning text
       - repo_url (str): GitHub repo URL without https://
