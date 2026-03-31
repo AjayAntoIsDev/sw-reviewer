@@ -14,6 +14,7 @@ from slack_sdk.web.async_client import AsyncWebClient
 from sw_reviewer.config import configure_observability, load_config
 from sw_reviewer.agent import create_agent
 from sw_reviewer.shipwrights_tools import _get_auth
+from sw_reviewer.usage import log_usage
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -114,9 +115,12 @@ async def run_review_for_ship(agent, ship: dict, slack: AsyncWebClient, channel:
     # Run the agent (non-streaming) to perform the review
     pdf_path = None
     try:
+        logger.info("Starting review for ship %s", ship_id)
         result = await agent.run(
             f"Review the project {ship_id}",
         )
+
+        log_usage(result.usage(), label=f"review_ship_{ship_id}")
 
         # Extract PDF path from tool results in the messages
         for msg in result.all_messages():

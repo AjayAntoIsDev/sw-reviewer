@@ -20,6 +20,8 @@ from pydantic_ai.messages import ModelMessage, TextPart
 from slack_sdk.errors import SlackApiError
 from slack_sdk.models.messages.chunk import TaskUpdateChunk
 
+from sw_reviewer.usage import log_usage
+
 if TYPE_CHECKING:
     from pydantic_ai import Agent
     from slack_sdk.web.async_client import AsyncWebClient
@@ -201,8 +203,9 @@ async def run_agent_streaming(
         if flush_task is not None and not flush_task.done():
             await flush_task
 
-        # Save conversation history
+        # Log usage and save conversation history
         if result_event is not None:
+            log_usage(result_event.result.usage(), label=f"slack_stream_{channel_id}")
             await store.save(thread_key, result_event.result.all_messages())
 
     except Exception:
