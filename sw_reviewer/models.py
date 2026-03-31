@@ -12,6 +12,7 @@ class PreCheckResult(BaseModel):
     """Output of the pre-check stage."""
     detected_project_type: str
     api_given_type: str | None = None
+    type_mismatch: bool = False
     repo_url: str
     repo_accessible: bool
     readme_exists: bool

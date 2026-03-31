@@ -58,10 +58,17 @@ Check that the README's **prose and documentation** is written in English. Judge
 - **fail**: README prose/documentation (headings, paragraphs, setup instructions) is in a non-English language with no English version linked
 
 ### 8. demo_validity
-Validate the demo link/artifact based on the detected project type. Refer to `demo_guidelines.md` for type-specific rules. Check that the link type is appropriate (e.g., web apps should have a live URL, not a GitHub release; libraries should be on a package manager, not just GitHub). Do NOT test demo functionality — that is for human reviewers.
-- **pass**: Demo link/artifact matches the expected type
-- **warn**: Demo exists but is on a discouraged platform
-- **fail**: Demo link/artifact is missing or wrong type (e.g., ngrok URL for a web app)
+Validate the demo link/artifact based on the **detected project type from pre-check** (NOT the API-given type). Use the `detected_project_type` to look up the correct rules in `demo_guidelines.md`. If the pre-check flagged a `type_mismatch`, pay extra attention — the demo URL may match the wrong type.
+
+Cross-reference the demo against the actual project:
+- Does the demo URL make sense for what the code actually is? (e.g., a live web URL for a project that is actually a CLI tool is a mismatch)
+- Does the demo show the same project as the repo? (e.g., demo URL leads to a generic template site while repo has custom code)
+- Is the demo link the right format for the detected type? (refer to `demo_guidelines.md`)
+
+Do NOT test demo functionality — that is for human reviewers.
+- **pass**: Demo link/artifact matches the expected type for `detected_project_type`
+- **warn**: Demo exists but is on a discouraged platform, or detected type is ambiguous
+- **fail**: Demo link/artifact is missing, wrong type for the detected project, or clearly unrelated to the repo
 
 ### 9. demo_credentials
 Check if the project requires demo credentials or premade accounts for testing. Premade/shared credentials are NOT allowed — reviewers must be able to create their own account and log in themselves. Having authentication (signup/login) is fine; providing shared test accounts is not.

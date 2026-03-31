@@ -35,10 +35,11 @@ When asked to review a project:
 3. **Fetch README** — call `review_get_github_readme`
 4. **Check commits** — call `review_get_github_commits`
 5. **Get languages/files** — call `review_get_github_languages` and `review_get_github_repo_tree`
-6. **Check demo URL** — call `review_check_url` on the demo link
-7. **Check Flavortown** — call `review_fetch_flavortown_project` if ftLink exists
-8. **Inspect files** — call `review_get_github_file_content` for suspicious files
-9. **Compile verdict** — run through all checks and produce the final review
+6. **Detect project type** — use the repo tree, languages, README, project name/description, and demo URL pattern to independently determine the actual project type. The `ai_summary_type` from the submission API is unreliable — always verify it against what you find in the repo. Your detected type is what all downstream checks (especially demo validation) must use.
+7. **Check demo URL** — call `review_check_url` on the demo link, then verify the demo makes sense for your DETECTED project type (not the API type)
+8. **Check Flavortown** — call `review_fetch_flavortown_project` if ftLink exists
+9. **Inspect files** — call `review_get_github_file_content` for suspicious files
+10. **Compile verdict** — run through all checks and produce the final review
 
 IMPORTANT RULES:
 - Do NOT use browser tools for things the review tools can do (URL checks, reading pages, GitHub data)
