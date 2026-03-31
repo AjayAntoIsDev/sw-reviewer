@@ -94,7 +94,7 @@
     set text(size: 8pt, fill: hc-slate, font: sans)
     grid(
       columns: (1fr, auto),
-      align(left)[Powered by Floppy's own wallet · Hack Club],
+      align(left)[Made by Floppy · Powered by Hack Club AI],
       align(right)[Page #counter(page).display("1 of 1", both: true)],
     )
   },

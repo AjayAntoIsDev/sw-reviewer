@@ -8,12 +8,14 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from openai import AsyncOpenAI
 from pydantic_ai import Agent
-from pydantic_ai.models.openrouter import OpenRouterModelSettings
+from pydantic_ai.models.openrouter import OpenRouterModel, OpenRouterModelSettings
+from pydantic_ai.providers.openrouter import OpenRouterProvider
 from pydantic_ai.tools import Tool
 
 from sw_reviewer import review_tools, shipwrights_tools
-from sw_reviewer.config import AppConfig
+from sw_reviewer.config import HACKCLUB_BASE_URL, AppConfig
 
 PROMPTS_DIR = Path(__file__).resolve().parent.parent / 'prompts'
 
@@ -90,10 +92,20 @@ def _collect_shipwrights_tools() -> list[Tool]:
     ]
 
 
+def _build_model(config: AppConfig) -> OpenRouterModel:
+    """Build the model, using Hack Club AI or OpenRouter as the backend."""
+    if config.ai_provider == 'hackclub':
+        client = AsyncOpenAI(base_url=HACKCLUB_BASE_URL, api_key=config.api_key)
+        provider = OpenRouterProvider(openai_client=client)
+    else:
+        provider = OpenRouterProvider(api_key=config.api_key)
+    return OpenRouterModel(config.model_name, provider=provider)
+
+
 def create_agent(config: AppConfig) -> Agent:
     """Create the single review agent with all tools and the full system prompt."""
     return Agent(
-        f'openrouter:{config.model_name}',
+        _build_model(config),
         instructions=_build_system_prompt(),
         instrument=True,
         model_settings=OpenRouterModelSettings(
