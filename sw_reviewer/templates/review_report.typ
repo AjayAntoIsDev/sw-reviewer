@@ -118,6 +118,13 @@
 // ═══════════════════════════════════════════════════════════════════════════
 // DOCUMENT BODY
 // ═══════════════════════════════════════════════════════════════════════════
+// ── Warning Banner ──────────────────────────────────────────────────────────
+#rect(width: 100%, fill: hc-red.transparentize(90%), stroke: 1.5pt + hc-red, radius: 6pt, inset: 10pt)[
+  #text(fill: hc-red, weight: "bold", size: 10pt)[⚠️ WARNING:]
+  #text(fill: hc-smoke, size: 10pt)[ sw-clanker cant interact with the demo or verify its live functionality.]
+]
+
+#v(8pt)
 
 // ── Top Banner ──────────────────────────────────────────────────────────────
 #rect(width: 100%, fill: hc-red, radius: 6pt, inset: 15pt)[
@@ -132,7 +139,8 @@
   ]
 ]
 
-#v(12pt)
+#v(8pt)
+
 
 // ── Metadata Grid ───────────────────────────────────────────────────────────
 #grid(
@@ -153,7 +161,7 @@
 
   rect(height: 72pt, fill: hc-card, stroke: 1pt + hc-border, radius: 6pt, inset: 12pt, width: 100%)[
     #text(size: 9pt, fill: hc-slate, weight: "bold")[PROJECT TYPE] \
-    #v(4pt)
+    #v(6pt)
     #text(size: 12pt, fill: hc-snow, weight: "black")[#project_type]
   ],
 

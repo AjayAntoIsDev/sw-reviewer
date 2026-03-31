@@ -20,7 +20,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 DEFAULT_CHANNEL = "C0ANDAD1DRC"
-POLL_INTERVAL = 20.0
+POLL_INTERVAL = 15.0
 SHIP_LIMIT = 30
 
 
@@ -196,6 +196,15 @@ async def main() -> None:
         await run_review_for_ship(agent, ship, slack, channel)
         logger.info(f"[{utc_now()}] Test complete")
         return
+
+    # Announce that the watcher is online
+    try:
+        await slack.chat_postMessage(
+            channel=channel,
+            text=f":shipitparrot: Watching for new ships! Polling every {int(POLL_INTERVAL)}s",
+        )
+    except Exception:
+        logger.exception("Failed to send online announcement")
 
     # Watch mode
     seen_ids: set[int] = set()
