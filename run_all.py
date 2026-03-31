@@ -37,7 +37,7 @@ async def _run_watcher(agent, slack: AsyncWebClient, channel: str, base_url: str
     try:
         await slack.chat_postMessage(
             channel=channel,
-            text=f":ship_it_parrot: Ship watcher is online! Polling every {int(POLL_INTERVAL)}s",
+            text=f":shipitparrot: Watching for new ships! Polling every {int(POLL_INTERVAL)}s",
         )
     except Exception:
         logger.exception("Failed to send watcher online announcement")
