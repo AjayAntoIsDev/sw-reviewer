@@ -3,6 +3,7 @@
 import asyncio
 import logging
 import os
+from datetime import datetime, timezone
 
 import uvicorn
 from slack_bolt.adapter.socket_mode.async_handler import AsyncSocketModeHandler
@@ -44,6 +45,7 @@ async def _run_watcher(agent, slack: AsyncWebClient, channel: str, base_url: str
 
     seen_ids: set[int] = set()
     first_poll = True
+    last_poll_time: datetime | None = None
     logger.info("[%s] Watcher polling %s → %s (interval=%ss)", utc_now(), base_url, channel, POLL_INTERVAL)
 
     while True:
@@ -58,6 +60,15 @@ async def _run_watcher(agent, slack: AsyncWebClient, channel: str, base_url: str
                 ship_id = int(ship_id_raw)
                 current_ids.add(ship_id)
                 if ship_id not in seen_ids and not first_poll:
+                    created_at_str = ship.get("createdAt")
+                    if created_at_str and last_poll_time:
+                        created_at = datetime.fromisoformat(created_at_str.replace("Z", "+00:00"))
+                        if created_at < last_poll_time:
+                            logger.info(
+                                "[%s] Skipping ship %s: createdAt %s is before last poll %s",
+                                utc_now(), ship_id, created_at_str, last_poll_time.isoformat(),
+                            )
+                            continue
                     new_ships.append(ship)
 
             if first_poll:
@@ -69,6 +80,8 @@ async def _run_watcher(agent, slack: AsyncWebClient, channel: str, base_url: str
                 for ship in new_ships:
                     logger.info("[%s] NEW_SHIP id=%s", utc_now(), ship.get("id"))
                     await run_review_for_ship(agent, ship, slack, channel)
+
+            last_poll_time = datetime.now(timezone.utc)
         except Exception:
             logger.exception("[%s] Poll error", utc_now())
 

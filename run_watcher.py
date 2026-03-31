@@ -209,6 +209,7 @@ async def main() -> None:
     # Watch mode
     seen_ids: set[int] = set()
     first_poll = True
+    last_poll_time: datetime | None = None
 
     logger.info(f"[{utc_now()}] Watching new ships on {base_url} → channel {channel} (interval={POLL_INTERVAL}s)")
 
@@ -226,6 +227,16 @@ async def main() -> None:
                 current_ids.add(ship_id)
 
                 if ship_id not in seen_ids and not first_poll:
+                    # Only treat as new if createdAt is after our last poll
+                    created_at_str = ship.get("createdAt")
+                    if created_at_str and last_poll_time:
+                        created_at = datetime.fromisoformat(created_at_str.replace("Z", "+00:00"))
+                        if created_at < last_poll_time:
+                            logger.info(
+                                f"[{utc_now()}] Skipping ship {ship_id}: createdAt {created_at_str} "
+                                f"is before last poll {last_poll_time.isoformat()}"
+                            )
+                            continue
                     new_ships.append(ship)
 
             if first_poll:
@@ -237,6 +248,8 @@ async def main() -> None:
                 for ship in new_ships:
                     logger.info(f"[{utc_now()}] NEW_SHIP id={ship.get('id')}")
                     await run_review_for_ship(agent, ship, slack, channel)
+
+            last_poll_time = datetime.now(timezone.utc)
 
         except Exception:
             logger.exception(f"[{utc_now()}] Poll error")
