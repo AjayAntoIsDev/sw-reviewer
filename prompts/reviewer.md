@@ -28,14 +28,13 @@ Weigh all check results to reach a verdict:
   - `demo_credentials` fail: project requires demo credentials or premade accounts
   - `api_key_exposure` fail: hardcoded API keys leaked in public code
   - `description_accuracy` fail: major features described don't exist in the project
+  - `ai_detection` fail: AI usage detected without AI disclosure in FT project settings
 - **FLAG_FOR_HUMAN** if:
   - The project type is VR
   - Pre-check flagged `resubmission_count >= 3` (resubmission spam)
   - Multiple checks return `warn`
   - Any situation where automated review cannot make a confident call
 - **APPROVE** if all checks pass or only have minor warnings that do not affect core requirements.
-
-Do NOT reject solely because of AI signals. If AI is detected but no AI disclosure in FT settings, warn the submitter to update their AI declaration in FT project settings — this is not a rejection reason on its own.
 
 ## Output format
 
@@ -50,7 +49,7 @@ Return structured output with these fields:
 - `special_flags` (list[str] | null): Include any of:
   - "UPDATED PROJECT" if pre_flavortown_commits was warn
   - "NEEDS HUMAN REVIEW (VR)" if project type is VR
-  - "AI CONCERN" if ai_detection was warn (not a rejection reason)
+  - "AI UNDISCLOSED" if ai_detection was fail
   - "RESUBMISSION SPAM" if resubmission_count >= 3
   - "API KEY LEAKED" if api_key_exposure was fail
 

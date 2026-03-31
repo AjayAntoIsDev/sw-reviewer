@@ -23,7 +23,7 @@ Check git commit history for activity before December 25, 2024 (pre-Flavortown).
 ### 4. ai_disclosure
 Analyze the project README for signs of AI generation (generic phrasing, ChatGPT-style structure like "🚀 Features", "Getting Started" with boilerplate content, overly polished language that doesn't match code quality). Also check the demo site/app for AI-generated content. If AI usage is detected, check whether the AI disclosure checkbox is set in the FT project settings (not just mentioned in description).
 - **pass**: No AI signals detected, OR AI detected and disclosure set in FT project settings
-- **warn**: AI signals detected in README/demo but no AI disclosure in FT project settings
+- **fail**: AI signals detected in README/demo but no AI disclosure in FT project settings
 
 ### 5. commit_integrity
 Check commits for suspicious patterns:
