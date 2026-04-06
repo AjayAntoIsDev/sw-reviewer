@@ -114,6 +114,8 @@ async def run_review_for_ship(agent, ship: dict, slack: AsyncWebClient, channel:
 
     # Run the agent (non-streaming) to perform the review
     pdf_path = None
+    verdict = None
+    reasoning = None
     try:
         logger.info("Starting review for ship %s", ship_id)
         result = await agent.run(
@@ -122,19 +124,59 @@ async def run_review_for_ship(agent, ship: dict, slack: AsyncWebClient, channel:
 
         log_usage(result.usage(), label=f"review_ship_{ship_id}")
 
-        # Extract PDF path from tool results in the messages
+        # Extract PDF path and verdict from tool results in the messages
         for msg in result.all_messages():
             for part in getattr(msg, "parts", []):
                 tool_name = getattr(part, "tool_name", None)
                 if tool_name == "review_generate_pdf":
-                    content = getattr(part, "content", "")
-                    try:
-                        parsed = json.loads(content) if isinstance(content, str) else {}
-                        path = parsed.get("path", "")
-                        if path and os.path.isfile(path):
-                            pdf_path = path
-                    except (json.JSONDecodeError, TypeError):
-                        pass
+                    # ToolCallPart has args; extract verdict/reasoning from them
+                    tool_args = getattr(part, "args", None)
+                    if tool_args is not None:
+                        if isinstance(tool_args, dict):
+                            review_json_str = tool_args.get("review_json", "")
+                        elif isinstance(tool_args, str):
+                            review_json_str = tool_args
+                        else:
+                            review_json_str = ""
+                        try:
+                            review_data = json.loads(review_json_str) if review_json_str else {}
+                            verdict = review_data.get("verdict") or verdict
+                            reasoning = review_data.get("reasoning") or reasoning
+                        except (json.JSONDecodeError, TypeError):
+                            pass
+
+                    # ToolReturnPart has content; extract PDF path from it
+                    content = getattr(part, "content", None)
+                    if content is not None:
+                        try:
+                            parsed = json.loads(content) if isinstance(content, str) else {}
+                            path = parsed.get("path", "")
+                            if path and os.path.isfile(path):
+                                pdf_path = path
+                        except (json.JSONDecodeError, TypeError):
+                            pass
+
+        # Update the parent message with the verdict
+        if verdict:
+            verdict_emoji = {
+                "APPROVE": ":bread_nod:",
+                "REJECT": ":no:",
+                "FLAG_FOR_HUMAN": ":aaa:",
+            }.get(verdict, ":grey_question:")
+            # Build a short summary from reasoning (first sentence or up to 200 chars)
+            summary = ""
+            if reasoning:
+                first_sentence = reasoning.split(". ")[0].strip()
+                summary = (first_sentence[:200] + "…") if len(first_sentence) > 200 else first_sentence
+                if not summary.endswith("."):
+                    summary += "."
+            updated_text = _build_ship_text(ship) + f"\n\n{verdict_emoji} *{verdict}*"
+            if summary:
+                updated_text += f"\n{summary}"
+            try:
+                await slack.chat_update(channel=channel, ts=msg_ts, text=updated_text)
+            except Exception:
+                logger.exception("Failed to update parent message with verdict")
 
         if pdf_path:
             await slack.files_upload_v2(
