@@ -124,37 +124,39 @@ async def run_review_for_ship(agent, ship: dict, slack: AsyncWebClient, channel:
 
         log_usage(result.usage(), label=f"review_ship_{ship_id}")
 
-        # Extract PDF path and verdict from tool results in the messages
+        # Extract PDF path and verdict from tool call/return parts in the messages.
+        # ToolCallPart (in ModelResponse) has `args` — we get verdict/reasoning from there.
+        # ToolReturnPart (in ModelRequest) has `content` — we get the PDF path from there.
         for msg in result.all_messages():
             for part in getattr(msg, "parts", []):
                 tool_name = getattr(part, "tool_name", None)
-                if tool_name == "review_generate_pdf":
-                    # ToolCallPart has args; extract verdict/reasoning from them
-                    tool_args = getattr(part, "args", None)
-                    if tool_args is not None:
-                        if isinstance(tool_args, dict):
-                            review_json_str = tool_args.get("review_json", "")
-                        elif isinstance(tool_args, str):
-                            review_json_str = tool_args
-                        else:
-                            review_json_str = ""
-                        try:
-                            review_data = json.loads(review_json_str) if review_json_str else {}
-                            verdict = review_data.get("verdict") or verdict
-                            reasoning = review_data.get("reasoning") or reasoning
-                        except (json.JSONDecodeError, TypeError):
-                            pass
+                if tool_name != "review_generate_pdf":
+                    continue
 
-                    # ToolReturnPart has content; extract PDF path from it
-                    content = getattr(part, "content", None)
-                    if content is not None:
-                        try:
-                            parsed = json.loads(content) if isinstance(content, str) else {}
-                            path = parsed.get("path", "")
-                            if path and os.path.isfile(path):
-                                pdf_path = path
-                        except (json.JSONDecodeError, TypeError):
-                            pass
+                # ToolCallPart: extract verdict/reasoning from args
+                args = getattr(part, "args", None)
+                if args is not None:
+                    if isinstance(args, dict):
+                        review_json_str = args.get("review_json", "")
+                    else:
+                        review_json_str = str(args)
+                    try:
+                        review_data = json.loads(review_json_str) if review_json_str else {}
+                        verdict = review_data.get("verdict") or verdict
+                        reasoning = review_data.get("reasoning") or reasoning
+                    except (json.JSONDecodeError, TypeError):
+                        pass
+
+                # ToolReturnPart: extract PDF path from content
+                content = getattr(part, "content", None)
+                if content is not None:
+                    try:
+                        parsed = json.loads(content) if isinstance(content, str) else {}
+                        path = parsed.get("path", "")
+                        if path and os.path.isfile(path):
+                            pdf_path = path
+                    except (json.JSONDecodeError, TypeError):
+                        pass
 
         # Update the parent message with the verdict
         if verdict:
