@@ -19,6 +19,10 @@ logger = logging.getLogger(__name__)
 
 _GITHUB_API = 'https://api.github.com'
 _TIMEOUT = 20.0
+_BROWSER_HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+}
 
 
 def _github_headers() -> dict[str, str]:
@@ -252,6 +256,24 @@ async def review_get_github_file_content(repo_url: str, file_path: str) -> str:
         return _err(f'Failed to fetch file: {e}')
 
 
+def _spa_api_url(url: str) -> str | None:
+    """Return an API URL for known SPA sites that return non-200 for valid pages."""
+    lower = url.lower().rstrip('/')
+    # crates.io — e.g. https://crates.io/crates/frg -> https://crates.io/api/v1/crates/frg
+    m = re.match(r'https?://crates\.io/crates/([^/?#]+)', lower)
+    if m:
+        return f'https://crates.io/api/v1/crates/{m.group(1)}'
+    # npmjs.com — e.g. https://www.npmjs.com/package/foo -> https://registry.npmjs.org/foo
+    m = re.match(r'https?://(?:www\.)?npmjs\.com/package/([^/?#]+)', lower)
+    if m:
+        return f'https://registry.npmjs.org/{m.group(1)}'
+    # PyPI — e.g. https://pypi.org/project/foo -> https://pypi.org/pypi/foo/json
+    m = re.match(r'https?://pypi\.org/project/([^/?#]+)', lower)
+    if m:
+        return f'https://pypi.org/pypi/{m.group(1)}/json'
+    return None
+
+
 async def review_check_url(url: str) -> str:
     """Check if a URL is reachable and what it returns.
 
@@ -281,15 +303,34 @@ async def review_check_url(url: str) -> str:
         flags.append('localhost')
 
     try:
-        async with httpx.AsyncClient(timeout=_TIMEOUT, follow_redirects=True, headers={'User-Agent': 'sw-reviewer'}) as client:
+        async with httpx.AsyncClient(timeout=_TIMEOUT, follow_redirects=True, headers=_BROWSER_HEADERS) as client:
             r = await client.get(url)
+
+            status_code = r.status_code
+            final_url = str(r.url)
+            content_type = r.headers.get('content-type', '')
+            reachable = 200 <= status_code < 400
+
+            # SPA fallback: some sites (crates.io, npm, PyPI) return non-200
+            # for valid pages because they rely on client-side JS routing.
+            # Check their API to confirm the resource actually exists.
+            if not reachable:
+                api_url = _spa_api_url(url)
+                if api_url:
+                    try:
+                        api_r = await client.get(api_url)
+                        if 200 <= api_r.status_code < 400:
+                            reachable = True
+                            flags.append('spa_verified_via_api')
+                    except Exception:
+                        pass
 
         return _ok({
             'url': url,
-            'final_url': str(r.url),
-            'status_code': r.status_code,
-            'reachable': 200 <= r.status_code < 400,
-            'content_type': r.headers.get('content-type', ''),
+            'final_url': final_url,
+            'status_code': status_code,
+            'reachable': reachable,
+            'content_type': content_type,
             'flags': flags if flags else None,
         })
     except Exception as e:
@@ -314,7 +355,7 @@ async def review_fetch_page_text(url: str) -> str:
         return _err(f'Invalid URL: {url}')
 
     try:
-        async with httpx.AsyncClient(timeout=_TIMEOUT, follow_redirects=True, headers={'User-Agent': 'sw-reviewer'}) as client:
+        async with httpx.AsyncClient(timeout=_TIMEOUT, follow_redirects=True, headers=_BROWSER_HEADERS) as client:
             r = await client.get(url)
 
         if r.status_code >= 400:
@@ -350,7 +391,7 @@ async def review_fetch_flavortown_project(ft_url: str) -> str:
         return _err(f'Not a Flavortown URL: {ft_url}')
 
     try:
-        async with httpx.AsyncClient(timeout=_TIMEOUT, follow_redirects=True, headers={'User-Agent': 'sw-reviewer'}) as client:
+        async with httpx.AsyncClient(timeout=_TIMEOUT, follow_redirects=True, headers=_BROWSER_HEADERS) as client:
             r = await client.get(ft_url)
 
         if r.status_code >= 400:
