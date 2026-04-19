@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import os
 import re
 from typing import TYPE_CHECKING
 
@@ -128,16 +129,21 @@ def create_slack_app(config: AppConfig, agent: Agent) -> AsyncApp:
 
     app.assistant(assistant)
 
+    watcher_channel = os.getenv('WATCHER_CHANNEL', 'C0ANDAD1DRC')
+
     @app.event('app_mention')
     async def handle_app_mention(event: dict, client, context: AsyncBoltContext):
+        channel_id = event['channel']
+
+        if channel_id != watcher_channel:
+            return
+
         raw_text = event.get('text', '')
         user_message = _MENTION_RE.sub('', raw_text).strip()
         files = event.get('files')
 
         if not user_message and not files:
             return
-
-        channel_id = event['channel']
         thread_ts = event.get('thread_ts') or event['ts']
 
         try:
