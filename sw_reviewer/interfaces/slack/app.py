@@ -9,9 +9,6 @@ from typing import TYPE_CHECKING
 
 from slack_bolt.app.async_app import AsyncApp
 from slack_bolt.context.async_context import AsyncBoltContext
-from slack_bolt.context.say.async_say import AsyncSay
-from slack_bolt.middleware.assistant.async_assistant import AsyncAssistant
-
 from sw_reviewer.history import ConversationStore
 from sw_reviewer.interfaces.slack.files import build_user_content
 from sw_reviewer.interfaces.slack.stream import run_agent_streaming
@@ -73,61 +70,6 @@ def create_slack_app(config: AppConfig, agent: Agent) -> AsyncApp:
 
     app = AsyncApp(token=config.slack_bot_token)
     store = ConversationStore()
-    assistant = AsyncAssistant()
-
-    @assistant.thread_started
-    async def handle_thread_started(
-        say: AsyncSay,
-        set_suggested_prompts,
-        **kwargs,
-    ):
-        await say('How can I help you? I can browse the web, review applications, and more.')
-        await set_suggested_prompts(
-            prompts=[
-                {
-                    'title': 'Navigate to a URL',
-                    'message': 'Please navigate to https://example.com and tell me what you see.',
-                },
-                {
-                    'title': 'Take a screenshot',
-                    'message': 'Navigate to https://example.com and take a screenshot.',
-                },
-                {
-                    'title': 'Review a web page',
-                    'message': 'Please review the UI/UX of https://example.com and give me feedback.',
-                },
-            ],
-        )
-
-    @assistant.user_message
-    async def handle_user_message(
-        client,
-        context: AsyncBoltContext,
-        payload: dict,
-        say: AsyncSay,
-        set_status,
-        **kwargs,
-    ):
-        await set_status(status='Thinking...')
-
-        try:
-            await _handle_message(
-                agent=agent,
-                config=config,
-                store=store,
-                client=client,
-                channel_id=payload['channel'],
-                thread_ts=payload['thread_ts'],
-                team_id=context.team_id or '',
-                user_id=context.user_id or '',
-                user_message=payload.get('text', ''),
-                files=payload.get('files'),
-            )
-        except Exception:
-            logger.exception('Failed to run agent')
-            await say(':warning: Something went wrong. Please try again.')
-
-    app.assistant(assistant)
 
     watcher_channel = os.getenv('WATCHER_CHANNEL', 'C0ANDAD1DRC')
 
